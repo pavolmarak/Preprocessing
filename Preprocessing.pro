@@ -20,7 +20,9 @@ SOURCES += preprocessing.cpp \
     mask.cpp \
     qualitymap.cpp \
     gaborfiltergpu.cpp \
-    preprocessing_caffenetwork.cpp
+    preprocessing_caffenetwork.cpp \
+    contrastbatch.cpp \
+    maskbatch.cpp
 
 HEADERS += preprocessing.h\
         preprocessing_global.h \
@@ -37,7 +39,9 @@ HEADERS += preprocessing.h\
     qualitymap.h \
     gaborfiltergpu.h \
     preprocessing_config.h \
-    preprocessing_caffenetwork.h
+    preprocessing_caffenetwork.h \
+    contrastbatch.h \
+    maskbatch.h
 
 unix {
     target.path = /usr/lib

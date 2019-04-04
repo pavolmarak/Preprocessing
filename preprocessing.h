@@ -84,6 +84,8 @@ private:
     Mask mask;
     FrequencyMap fMap;
 
+
+
     QTime timer;
 
     bool preprocessingIsRunning;
