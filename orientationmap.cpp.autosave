@@ -69,7 +69,7 @@ void OrientationMap::computeBasicMapCPU()
 void OrientationMap::computeBasicMapGPU()
 {
     af::timer::start();
-
+    
     this->imgInputAF = Helper::mat_uchar2array_uchar(this->imgInput);
 
     af::array Gx, Gy;

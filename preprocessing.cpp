@@ -305,6 +305,26 @@ int Preprocessing::loadInput(QString inputPath)
     return 1;
 }
 
+void Preprocessing::createBatch(){
+    int size;
+    if(this->inputParams.mode==image || this->inputParams.mode==imagePath)
+    {
+        size=1;
+        this->batchResults.original=Helper::mat_uchar2array_uchar(this->inputParams.imgOriginal);
+    }
+    else
+    {
+        size=this->inputParams.imgOriginals.size();
+        this->batchResults.original=af::constant(0,0,0,size,u8);
+        for(int i=0;i<size;i++){
+            this->batchResults.original(af::span,af::span,i)=Helper::mat_uchar2array_uchar(this->inputParams.imgOriginals[i]);
+        }
+
+    }
+
+
+}
+
 // PREPROCESSING START
 
 void Preprocessing::start()
@@ -316,6 +336,12 @@ void Preprocessing::start()
             this->cleanDurations();
 
             this->preprocessingIsRunning = true;
+
+            //if batchmode ON -> start BatchPreprocessing
+            if(this->BatchMode){
+
+            }
+
             if (this->inputParams.mode == image || this->inputParams.mode == imagePath) {
                 this->results.imgOriginal = this->inputParams.imgOriginal;
                 this->startProcess(this->inputParams.imgOriginal);
@@ -538,4 +564,25 @@ void Preprocessing::preprocessingError(int errorcode)
      */
 
     emit preprocessingErrorSignal(errorcode);
+}
+
+void Preprocessing::setBatchModeON(bool value){
+    this->BatchMode=value;
+}
+
+
+void Preprocessing::startBatchProcess(const cv::Mat &imgOriginal){
+    af::array originals,enhanced,masks;
+    originals = Helper::mat_uchar2array_uchar(imgOriginal);
+
+    //contrast enhancement
+    this->batchResults.enhanced=this->contrast_batch.start(this->batchResults.original);
+
+    //create mask
+    this->batchResults.mask=this->mask_batch.start(this->batchResults.enhanced);
+
+    //orient map
+    //gabor
+    //binarization
+    //thining
 }

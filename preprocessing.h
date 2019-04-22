@@ -15,6 +15,10 @@
 #include "mask.h"
 #include "qualitymap.h"
 
+//batch mode
+#include "contrastbatch.h"
+#include "maskbatch.h"
+
 typedef struct preprocessing_all_results {
     cv::Mat imgOriginal;
     cv::Mat imgContrastEnhanced;
@@ -30,6 +34,18 @@ typedef struct preprocessing_all_results {
     cv::Mat orientationMap;
     cv::Mat qualityMap;
 } PREPROCESSING_ALL_RESULTS;
+
+typedef struct batchPreprocessingResults{
+    af::array original;
+    af::array enhanced;
+    af::array mask;
+    af::array oMap;
+    af::array Gabor;
+    af::array binary;
+    af::array skeleton;
+    int count;
+    PREPROCESSING_DURATIONS durations;
+} BATCH_RESULTS;
 
 #ifndef PREPROCESSING_RESULTS_DEFINED
 typedef struct preprocessing_results {
@@ -55,6 +71,7 @@ typedef struct preprocessing_durations {
     int frequencyMap;
 } PREPROCESSING_DURATIONS;
 
+
 class PREPROCESSINGSHARED_EXPORT Preprocessing : public QObject
 {
     Q_OBJECT
@@ -66,6 +83,7 @@ public:
     int loadInput(cv::Mat imgOriginal);
     int loadInput(QVector<cv::Mat> imgOriginals);
     int loadInput(QString inputPath);
+    void createBatch(); // create batch from input for BatchPreprocessing
 
     int setPreprocessingParams(int blockSize = 13, double gaborLambda = 9, double gaborSigma = 3, int gaussBlockBasic = 1, double gaussSigmaBasic = 1.0, int gaussBlockAdvanced = 121, double gaussSigmaAdvanced = 10.0, int holeSize = 20);
     int setFeatures(bool useAdvancedMode, bool useContrastEnhancement = true, bool useAdvancedOrientationMap = true, bool useHoleRemover = true, bool generateInvertedSkeleton = true, bool useQualityMap = true, bool useMask = false, bool useFrequencyMap = false);
@@ -73,7 +91,12 @@ public:
     int setMaskParams(CAFFE_FILES maskFiles, int blockSize, int exBlockSize, bool useSmooth);
     int setCPUOnly(bool enabled, int threadNum = 0);
 
+    //batch mode
+    void setBatchModeON(bool value);
+
+
 private:
+
     ContrastEnhancement contrast;
     OrientationMap oMap;
     QualityMap qMap;
@@ -84,6 +107,12 @@ private:
     Mask mask;
     FrequencyMap fMap;
 
+    //batch mode classes:
+    contrastBatch contrast_batch;
+    maskBatch mask_batch;
+    //----------------------------------------------------------------------------------
+    bool BatchMode;//defines if batch mode is on(true), or off (false)
+    BATCH_RESULTS batchResults;
 
 
     QTime timer;
@@ -120,6 +149,7 @@ private:
     void cleanInput();
     void cleanDurations();
     void startProcess(const cv::Mat &imgOriginal);
+    void startBatchProcess(const cv::Mat &imgOriginal);
 
 private slots:
     void allGaborThreadsFinished();

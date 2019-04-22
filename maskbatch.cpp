@@ -26,6 +26,7 @@ array maskBatch::start(array enhancedImages){
     return enhancedImages;
 }
 
+
 array maskBatch::createSingleMask(array picture){
     int height=picture.dims(0);
         int width=picture.dims(1);

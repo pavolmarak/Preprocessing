@@ -5,18 +5,18 @@
 
 
 
-//histogram eq / Adaptive thresholding?
+
 class contrastBatch
 {
 private:
-    float spatialSigma;//bilateral
-    float chromaticSigma;//-||-
-    int windowSize; //Adaptive thresholding
-    int constant;
+    float spatialSigma;//bilateral filter params
+    float chromaticSigma;//-||- params
+
 
     af::array enhSingle(af::array singleImage);
 public:
     contrastBatch();
+    void setParams(float spatialSigma,float chromaticSigma);
     af::array start(af::array originalImages);
 };
 
