@@ -22,7 +22,8 @@ SOURCES += preprocessing.cpp \
     gaborfiltergpu.cpp \
     preprocessing_caffenetwork.cpp \
     contrastbatch.cpp \
-    maskbatch.cpp
+    maskbatch.cpp \
+    binarizationbatch.cpp
 
 HEADERS += preprocessing.h\
         preprocessing_global.h \
@@ -41,7 +42,8 @@ HEADERS += preprocessing.h\
     preprocessing_config.h \
     preprocessing_caffenetwork.h \
     contrastbatch.h \
-    maskbatch.h
+    maskbatch.h \
+    binarizationbatch.h
 
 unix {
     target.path = /usr/lib
@@ -59,4 +61,4 @@ INCLUDEPATH += /usr/include
 DEPENDPATH += /usr/include
 
 #OpenCV
-INCLUDEPATH += /usr/include/opencv2
+INCLUDEPATH += /usr/include/opencv4

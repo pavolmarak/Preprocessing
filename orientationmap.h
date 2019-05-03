@@ -18,9 +18,10 @@ public:
     void computeAdvancedMapGPU();
     void drawBasicMap(const cv::Mat &imgOriginal);
     //batch function
-    //OMAP_PARAMS default NULL -> must be set by setParams() before
-    af::array computeBasicMapBatch(af::array imgOriginal,OMAP_PARAMS omap = NULL);
-    af::array computeAdvancedMapBatch(af::array imgOriginal,OMAP_PARAMS omap = NULL);
+    af::array computeBasicMapBatch(af::array imgOriginal);
+    af::array computeAdvancedMapBatch(af::array imgOriginal);
+
+
 
 
     //getNset

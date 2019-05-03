@@ -572,8 +572,7 @@ void Preprocessing::setBatchModeON(bool value){
 
 
 void Preprocessing::startBatchProcess(const cv::Mat &imgOriginal){
-    af::array originals,enhanced,masks;
-    originals = Helper::mat_uchar2array_uchar(imgOriginal);
+
 
     //contrast enhancement
     this->batchResults.enhanced=this->contrast_batch.start(this->batchResults.original);
@@ -582,7 +581,11 @@ void Preprocessing::startBatchProcess(const cv::Mat &imgOriginal){
     this->batchResults.mask=this->mask_batch.start(this->batchResults.enhanced);
 
     //orient map
+    this->batchResults.oMap=this->oMap.computeAdvancedMapBatch(this->batchResults.enhanced);
+
     //gabor
+
     //binarization
-    //thining
+    this->batchResults.binary=this->binary_batch.start(this->batchResults.enhanced);
+    //thining -> filtered2cv::mat -> thinning
 }

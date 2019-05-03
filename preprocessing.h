@@ -18,6 +18,7 @@
 //batch mode
 #include "contrastbatch.h"
 #include "maskbatch.h"
+#include "binarizationbatch.h"
 
 typedef struct preprocessing_all_results {
     cv::Mat imgOriginal;
@@ -110,6 +111,7 @@ private:
     //batch mode classes:
     contrastBatch contrast_batch;
     maskBatch mask_batch;
+    binarizationBatch binary_batch;
     //----------------------------------------------------------------------------------
     bool BatchMode;//defines if batch mode is on(true), or off (false)
     BATCH_RESULTS batchResults;

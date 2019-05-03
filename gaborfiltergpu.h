@@ -13,6 +13,9 @@ public:
     void setParams(const cv::Mat &imgInput, const GABOR_PARAMS &gaborParams);
     void enhanceWithBasicOMap();
     void enhanceWithAdvancedOMap();
+    //batch functions
+    af::array enhanceWithBasicOMapBatch(af::array images);
+    af::array enhanceWithAdvancedOMapBatch(af::array images);
 
     //getNset
     cv::Mat getImgEnhanced() const;
