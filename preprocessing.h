@@ -36,17 +36,7 @@ typedef struct preprocessing_all_results {
     cv::Mat qualityMap;
 } PREPROCESSING_ALL_RESULTS;
 
-typedef struct batchPreprocessingResults{
-    af::array original;
-    af::array enhanced;
-    af::array mask;
-    af::array oMap;
-    af::array Gabor;
-    af::array binary;
-    af::array skeleton;
-    int count;
-    PREPROCESSING_DURATIONS durations;
-} BATCH_RESULTS;
+
 
 #ifndef PREPROCESSING_RESULTS_DEFINED
 typedef struct preprocessing_results {
@@ -72,6 +62,16 @@ typedef struct preprocessing_durations {
     int frequencyMap;
 } PREPROCESSING_DURATIONS;
 
+typedef struct batchPreprocessingResults{
+    QVector<cv::Mat> original;
+    QVector<cv::Mat> enhanced;
+    QVector<cv::Mat> mask;
+    QVector<cv::Mat> oMap;
+    QVector<cv::Mat> Gabor;
+    QVector<cv::Mat> binary;
+    QVector<cv::Mat> skeleton;
+    PREPROCESSING_DURATIONS durations;
+} BATCH_RESULTS;
 
 class PREPROCESSINGSHARED_EXPORT Preprocessing : public QObject
 {
@@ -84,7 +84,8 @@ public:
     int loadInput(cv::Mat imgOriginal);
     int loadInput(QVector<cv::Mat> imgOriginals);
     int loadInput(QString inputPath);
-    void createBatch(); // create batch from input for BatchPreprocessing
+    af::array createBatch(QVector<cv::Mat> MatImages); // create af::array Batch fort Batch mode
+    QVector<cv::Mat> decomposeBatch(af::array batch); // turn af::array Batch to QVector for storing
 
     int setPreprocessingParams(int blockSize = 13, double gaborLambda = 9, double gaborSigma = 3, int gaussBlockBasic = 1, double gaussSigmaBasic = 1.0, int gaussBlockAdvanced = 121, double gaussSigmaAdvanced = 10.0, int holeSize = 20);
     int setFeatures(bool useAdvancedMode, bool useContrastEnhancement = true, bool useAdvancedOrientationMap = true, bool useHoleRemover = true, bool generateInvertedSkeleton = true, bool useQualityMap = true, bool useMask = false, bool useFrequencyMap = false);
@@ -114,7 +115,7 @@ private:
     binarizationBatch binary_batch;
     //----------------------------------------------------------------------------------
     bool BatchMode;//defines if batch mode is on(true), or off (false)
-    BATCH_RESULTS batchResults;
+
 
 
     QTime timer;
@@ -142,6 +143,8 @@ private:
     QMap<QString, PREPROCESSING_RESULTS> resultsMap;
     QMap<QString, PREPROCESSING_ALL_RESULTS> allResultsMap;
 
+    BATCH_RESULTS batchAllResults;
+
     PREPROCESSING_DURATIONS durations;
 
     // PRIVATE FUNCTIONS
@@ -151,7 +154,7 @@ private:
     void cleanInput();
     void cleanDurations();
     void startProcess(const cv::Mat &imgOriginal);
-    void startBatchProcess(const cv::Mat &imgOriginal);
+    void startBatchProcess(QVector<cv::Mat> imgOriginal);
 
 private slots:
     void allGaborThreadsFinished();
@@ -164,6 +167,9 @@ signals:
     void preprocessingSequenceDoneSignal(QMap<QString, PREPROCESSING_RESULTS> results);
 
     void preprocessingDurationSignal(PREPROCESSING_DURATIONS durations);
+
+    void preprocessingBatchDoneSignal(BATCH_RESULTS batchAllResults);
+
     void preprocessingProgressSignal(int progress);
     void preprocessingErrorSignal(int errorcode);
 };

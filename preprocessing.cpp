@@ -305,24 +305,23 @@ int Preprocessing::loadInput(QString inputPath)
     return 1;
 }
 
-void Preprocessing::createBatch(){
-    int size;
-    if(this->inputParams.mode==image || this->inputParams.mode==imagePath)
-    {
-        size=1;
-        this->batchResults.original=Helper::mat_uchar2array_uchar(this->inputParams.imgOriginal);
+af::array Preprocessing::createBatch(QVector<cv::Mat> MatImages){
+    int count=MatImages.size();
+    cv::Mat data=MatImages[0];
+    af::array Batch(data.rows,data.cols,count);
+    for (int i=0;i<count;i++) {
+        Batch(af::span,af::span,i)=Helper::mat_uchar2array_uchar(MatImages[i]);
     }
-    else
+    return Batch;
+}
+
+QVector<cv::Mat> Preprocessing::decomposeBatch(af::array batch){
+    QVector<cv::Mat> data[batch.dims(2)];
+    for(int i=0;i<batch.dims(2);i++)
     {
-        size=this->inputParams.imgOriginals.size();
-        this->batchResults.original=af::constant(0,0,0,size,u8);
-        for(int i=0;i<size;i++){
-            this->batchResults.original(af::span,af::span,i)=Helper::mat_uchar2array_uchar(this->inputParams.imgOriginals[i]);
-        }
-
+        data[i]=Helper::array_uchar2mat_uchar(batch(af::span,af::span,i));
     }
-
-
+    return data;
 }
 
 // PREPROCESSING START
@@ -339,7 +338,7 @@ void Preprocessing::start()
 
             //if batchmode ON -> start BatchPreprocessing
             if(this->BatchMode){
-
+                this->startBatchProcess();
             }
 
             if (this->inputParams.mode == image || this->inputParams.mode == imagePath) {
@@ -571,15 +570,43 @@ void Preprocessing::setBatchModeON(bool value){
 }
 
 
+<<<<<<< HEAD
 void Preprocessing::startBatchProcess(const cv::Mat &imgOriginal){
 
+=======
+void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
+   this->batchAllResults.original=imgOriginal;
+>>>>>>> f54b61b9f419f8125827df4cff8078b103d883ca
 
     //contrast enhancement
-    this->batchResults.enhanced=this->contrast_batch.start(this->batchResults.original);
+    //af::array data=this->createBatch(this->batchAllResults.original);
+    this->timer.start();
+    data=this->contrast_batch.start(data);
+    this->batchAllResults.durations.contrastEnhancement=this->timer.elapsed();
+    this->batchAllResults.enhanced = this->decomposeBatch(data);
 
-    //create mask
-    this->batchResults.mask=this->mask_batch.start(this->batchResults.enhanced);
+    //segmentation
+    this->timer.start();
+    data = this->mask_batch.start(data);
+    this->batchAllResults.durations.mask=this->timer.elapsed();
+    this->batchAllResults.mask=decomposeBatch(data);
 
+    //computeOmap
+    if(this->features.useAdvancedOrientationMap){
+        data=this->oMap.computeAdvancedMapBatch(this->createBatch(this->batchAllResults.original),this->omapParams);
+    }
+    else{
+        data=this->oMap.computeBasicMapBatch(this->createBatch(this->batchAllResults.original),this->omapParams);
+    }
+    this->batchAllResults.oMap=this->decomposeBatch(data);
+    this->batchAllResults.durations.orientationMap=this->oMap.getDuration();
+
+    //gabor filter
+
+    //Binarization
+
+
+<<<<<<< HEAD
     //orient map
     this->batchResults.oMap=this->oMap.computeAdvancedMapBatch(this->batchResults.enhanced);
 
@@ -588,4 +615,6 @@ void Preprocessing::startBatchProcess(const cv::Mat &imgOriginal){
     //binarization
     this->batchResults.binary=this->binary_batch.start(this->batchResults.enhanced);
     //thining -> filtered2cv::mat -> thinning
+=======
+>>>>>>> f54b61b9f419f8125827df4cff8078b103d883ca
 }
