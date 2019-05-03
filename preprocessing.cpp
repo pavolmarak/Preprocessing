@@ -570,13 +570,9 @@ void Preprocessing::setBatchModeON(bool value){
 }
 
 
-<<<<<<< HEAD
-void Preprocessing::startBatchProcess(const cv::Mat &imgOriginal){
-
-=======
 void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
    this->batchAllResults.original=imgOriginal;
->>>>>>> f54b61b9f419f8125827df4cff8078b103d883ca
+
 
     //contrast enhancement
     //af::array data=this->createBatch(this->batchAllResults.original);
@@ -593,10 +589,10 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
 
     //computeOmap
     if(this->features.useAdvancedOrientationMap){
-        data=this->oMap.computeAdvancedMapBatch(this->createBatch(this->batchAllResults.original),this->omapParams);
+        data=this->oMap.computeAdvancedMapBatch(this->createBatch(this->batchAllResults.original));
     }
     else{
-        data=this->oMap.computeBasicMapBatch(this->createBatch(this->batchAllResults.original),this->omapParams);
+        data=this->oMap.computeBasicMapBatch(this->createBatch(this->batchAllResults.original));
     }
     this->batchAllResults.oMap=this->decomposeBatch(data);
     this->batchAllResults.durations.orientationMap=this->oMap.getDuration();
@@ -606,7 +602,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     //Binarization
 
 
-<<<<<<< HEAD
+
     //orient map
     this->batchResults.oMap=this->oMap.computeAdvancedMapBatch(this->batchResults.enhanced);
 
@@ -615,6 +611,6 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     //binarization
     this->batchResults.binary=this->binary_batch.start(this->batchResults.enhanced);
     //thining -> filtered2cv::mat -> thinning
-=======
->>>>>>> f54b61b9f419f8125827df4cff8078b103d883ca
+
+
 }
