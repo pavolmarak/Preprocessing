@@ -200,6 +200,14 @@ void Preprocessing::cleanResults()
     this->results.orientationMap.release();
     this->results.qualityMap.release();
 
+    this->batchAllResults.original.clear();
+    this->batchAllResults.enhanced.clear();
+    this->batchAllResults.mask.clear();
+    this->batchAllResults.Gabor.clear();
+    this->batchAllResults.binary.clear();
+    this->batchAllResults.skeleton.clear();
+
+
     this->resultsMap.clear();
     this->allResultsMap.clear();
 }
@@ -316,7 +324,7 @@ af::array Preprocessing::createBatch(QVector<cv::Mat> MatImages){
 }
 
 QVector<cv::Mat> Preprocessing::decomposeBatch(af::array batch){
-    QVector<cv::Mat> data[batch.dims(2)];
+    QVector<cv::Mat> data(batch.dims(2));
     for(int i=0;i<batch.dims(2);i++)
     {
         data[i]=Helper::array_uchar2mat_uchar(batch(af::span,af::span,i));
@@ -338,7 +346,14 @@ void Preprocessing::start()
 
             //if batchmode ON -> start BatchPreprocessing
             if(this->BatchMode){
-                this->startBatchProcess();
+                if(this->inputParams.mode==image|| this->inputParams.mode == imagePath){
+                    QVector<cv::Mat> image (1);
+                    image[0]=this->inputParams.imgOriginal;
+                    this->startBatchProcess(image);
+                }
+                else
+                    this->startBatchProcess(this->inputParams.imgOriginals);
+                return;
             }
 
             if (this->inputParams.mode == image || this->inputParams.mode == imagePath) {
@@ -575,16 +590,16 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
 
 
     //contrast enhancement
-    //af::array data=this->createBatch(this->batchAllResults.original);
+    af::array data=this->createBatch(this->batchAllResults.original);
     this->timer.start();
     data=this->contrast_batch.start(data);
-    this->batchAllResults.durations.contrastEnhancement=this->timer.elapsed();
+    this->durations.contrastEnhancement=this->timer.elapsed();
     this->batchAllResults.enhanced = this->decomposeBatch(data);
 
     //segmentation
     this->timer.start();
     data = this->mask_batch.start(data);
-    this->batchAllResults.durations.mask=this->timer.elapsed();
+    this->durations.mask=this->timer.elapsed();
     this->batchAllResults.mask=decomposeBatch(data);
 
     //computeOmap
@@ -595,22 +610,33 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
         data=this->oMap.computeBasicMapBatch(this->createBatch(this->batchAllResults.original));
     }
     this->batchAllResults.oMap=this->decomposeBatch(data);
-    this->batchAllResults.durations.orientationMap=this->oMap.getDuration();
+    this->durations.orientationMap=this->oMap.getDuration();
 
     //gabor filter
 
+
     //Binarization
+    data=this->createBatch(this->batchAllResults.Gabor);
+    this->timer.start();
+    data=this->binary_batch.start(data);
+    this->durations.binarization=this->timer.elapsed();
+    this->batchAllResults.binary=this->decomposeBatch(data);
 
+    //thinning
+    QVector<cv::Mat> skeletons (this->batchAllResults.binary.size());
+    this->timer.start();
+    for(int i=0;i<this->batchAllResults.binary.size();i++){
+            this->thinning.thinGuoHallFast(this->batchAllResults.binary[i],false);
+            skeletons[i] = this->thinning.getImgSkeleton();
+    }
+    this->durations.thinning=this->timer.elapsed();
+    this->batchAllResults.skeleton = skeletons;
 
+    emit preprocessingBatchDoneSignal(this->batchAllResults);
+    emit preprocessingDurationSignal(this->durations);
 
-    //orient map
-    this->batchResults.oMap=this->oMap.computeAdvancedMapBatch(this->batchResults.enhanced);
-
-    //gabor
-
-    //binarization
-    this->batchResults.binary=this->binary_batch.start(this->batchResults.enhanced);
-    //thining -> filtered2cv::mat -> thinning
-
+    this->cleanResults();
+    this->cleanDurations();
+    this->preprocessingIsRunning=false;
 
 }

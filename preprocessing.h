@@ -70,7 +70,6 @@ typedef struct batchPreprocessingResults{
     QVector<cv::Mat> Gabor;
     QVector<cv::Mat> binary;
     QVector<cv::Mat> skeleton;
-    PREPROCESSING_DURATIONS durations;
 } BATCH_RESULTS;
 
 class PREPROCESSINGSHARED_EXPORT Preprocessing : public QObject
