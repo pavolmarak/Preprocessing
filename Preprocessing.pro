@@ -59,4 +59,4 @@ INCLUDEPATH += /usr/include
 DEPENDPATH += /usr/include
 
 #OpenCV
-INCLUDEPATH += /usr/include/opencv2
+INCLUDEPATH += /usr/include/opencv4
