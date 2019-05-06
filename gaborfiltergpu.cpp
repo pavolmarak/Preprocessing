@@ -85,9 +85,9 @@ void GaborFilterGPU::enhanceWithBasicOMap()
     Helper::array_uchar2mat_uchar(output).copyTo(this->imgEnhanced(cv::Rect(paddingWidth/2, paddingHeight/2, cutWidth, cutHeight)));
 
     // Resize the orientation map to the original size
-    cv::Mat oMapCV(origHeight, origWidth, CV_32FC1);
-    this->gabor.oMap->copyTo(oMapCV(cv::Rect(paddingWidth/2, paddingHeight/2, cutWidth, cutHeight)));
-    *this->gabor.oMap = oMapCV.clone();
+   // cv::Mat oMapCV(origHeight, origWidth, CV_32FC1);
+   // this->gabor.oMap->copyTo(oMapCV(cv::Rect(paddingWidth/2, paddingHeight/2, cutWidth, cutHeight)));
+   // *this->gabor.oMap = oMapCV.clone();
 
     this->duration = af::timer::stop() * 1000; // s to ms
 }
@@ -130,9 +130,9 @@ void GaborFilterGPU::enhanceWithAdvancedOMap(){
     Helper::array_uchar2mat_uchar(output).copyTo(this->imgEnhanced(cv::Rect(paddingWidth/2, paddingHeight/2, cutWidth, cutHeight)));
 
     // Resize the orientation map to the original size
-    cv::Mat oMapCV(origHeight, origWidth, CV_32FC1);
-    this->gabor.oMap->copyTo(oMapCV(cv::Rect(paddingWidth/2, paddingHeight/2, cutWidth, cutHeight)));
-    *this->gabor.oMap = oMapCV.clone();
+    //cv::Mat oMapCV(origHeight, origWidth, CV_32FC1);
+    //this->gabor.oMap->copyTo(oMapCV(cv::Rect(paddingWidth/2, paddingHeight/2, cutWidth, cutHeight)));
+    //*this->gabor.oMap = oMapCV.clone();
 
     this->duration = af::timer::stop() * 1000; // s to ms
 }

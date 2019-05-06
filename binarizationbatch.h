@@ -8,7 +8,6 @@ private:
     int windowsize;
     int constant;
     af::array adaptiveThresholding(af::array input);
-
 public:
     binarizationBatch();
     af::array start(af::array originalImages);

@@ -649,6 +649,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
 
 
     //gabor filter
+     try{
     for(int i=0;i<this->batchAllResults.oMap.size();i++){
         this->orientationMapAF=Helper::mat_float2array_float(this->batchAllResults.oMap[i]);
         this->gaborGPU.setParams(this->batchAllResults.enhanced[i],this->gaborParams);
@@ -656,23 +657,23 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
         if(this->features.useAdvancedOrientationMap) this->gaborGPU.enhanceWithAdvancedOMap();
         else this->gaborGPU.enhanceWithBasicOMap();
         this->durations.gaborFilter += this->gaborGPU.getDuration();
-        try{
-            this->batchAllResults.Gabor.push_back(this->gaborGPU.getImgEnhanced());
-        }catch(cv::Exception e){
+
+        this->batchAllResults.Gabor.push_back(this->gaborGPU.getImgEnhanced());
+    }
+    }catch(cv::Exception e){
         qDebug() << "Gabor" << e.what();
     }
-    }
+
 
     //Binarization
     data=this->createBatch(this->batchAllResults.Gabor,false);
     this->timer.start();
     data=this->binary_batch.start(data);
     this->durations.binarization=this->timer.elapsed();
-    try{
-        this->batchAllResults.binary=this->decomposeBatch(data,false);
-    }catch(cv::Exception e){
-        qDebug() << "Binarization" << e.what();
-    }
+    //apply mask
+//    af::array mask=this->createBatch(this->batchAllResults.mask,false)/255;
+//    data=data*mask;
+    this->batchAllResults.binary=this->decomposeBatch(data,false);
 
     //thinning
     try{
