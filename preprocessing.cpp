@@ -1,5 +1,8 @@
 ﻿#include "preprocessing.h"
 
+#include <QDebug>
+
+
 Preprocessing::Preprocessing()
 {  
     this->preprocessingIsRunning = false;
@@ -313,21 +316,26 @@ int Preprocessing::loadInput(QString inputPath)
     return 1;
 }
 
-af::array Preprocessing::createBatch(QVector<cv::Mat> MatImages){
+af::array Preprocessing::createBatch(QVector<cv::Mat> MatImages, bool isFloat){
     int count=MatImages.size();
-    cv::Mat data=MatImages[0];
-    af::array Batch(data.rows,data.cols,count);
+    af::array Batch(MatImages.last().rows,MatImages.last().cols,count);
     for (int i=0;i<count;i++) {
+        if(isFloat)
+        Batch(af::span,af::span,i)=Helper::mat_float2array_float(MatImages[i]);
+        else
         Batch(af::span,af::span,i)=Helper::mat_uchar2array_uchar(MatImages[i]);
     }
     return Batch;
 }
 
-QVector<cv::Mat> Preprocessing::decomposeBatch(af::array batch){
-    QVector<cv::Mat> data(batch.dims(2));
+QVector<cv::Mat> Preprocessing::decomposeBatch(af::array batch, bool isFloat){
+    QVector<cv::Mat> data;
     for(int i=0;i<batch.dims(2);i++)
     {
-        data[i]=Helper::array_uchar2mat_uchar(batch(af::span,af::span,i));
+        if(isFloat)
+            data.push_back(Helper::array_float2mat_float(batch(af::span,af::span,i)));
+        else
+            data.push_back(Helper::array_uchar2mat_uchar(batch(af::span,af::span,i)));
     }
     return data;
 }
@@ -588,41 +596,86 @@ void Preprocessing::setBatchModeON(bool value){
 void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
    this->batchAllResults.original=imgOriginal;
 
-
+    af::array data;
     //contrast enhancement
-    af::array data=this->createBatch(this->batchAllResults.original);
+    try{
+    data=this->createBatch(this->batchAllResults.original,false);
     this->timer.start();
     data=this->contrast_batch.start(data);
     this->durations.contrastEnhancement=this->timer.elapsed();
-    this->batchAllResults.enhanced = this->decomposeBatch(data);
+    this->batchAllResults.enhanced = this->decomposeBatch(data,false);
+    }
+    catch(af::exception e){
+        qDebug() << "af exception in contrast enhancement : " << e.what();
+    }
 
     //segmentation
+    try{
     this->timer.start();
     data = this->mask_batch.start(data);
     this->durations.mask=this->timer.elapsed();
-    this->batchAllResults.mask=decomposeBatch(data);
+    this->batchAllResults.mask=decomposeBatch(data,false);
+    }catch(af::exception e){
+        qDebug() << "af exception in segmentation : " << e.what();
+    }
 
     //computeOmap
-    if(this->features.useAdvancedOrientationMap){
-        data=this->oMap.computeAdvancedMapBatch(this->createBatch(this->batchAllResults.original));
+    try{
+
+        if(this->features.useAdvancedOrientationMap){
+            for(int i=0;i<this->batchAllResults.original.size();i++){
+                   this->oMap.setParams(this->batchAllResults.original[i],this->omapParams);
+                   this->oMap.computeAdvancedMapGPU();
+                   this->batchAllResults.oMap.push_back(this->oMap.getOMap_advanced());
+                   this->durations.orientationMap+=this->oMap.getDuration();
+
+            }
+        }
+        else{
+            for(int i=0;i<this->batchAllResults.original.size();i++){
+                   this->oMap.setParams(this->batchAllResults.original[i],this->omapParams);
+                   this->oMap.computeBasicMapGPU();
+                try{
+                   this->batchAllResults.oMap.push_back(this->oMap.getOMap_basic());
+                  } catch(cv::Exception e){
+                qDebug() << "Omap" << e.what();
+            }
+                    this->durations.orientationMap+=this->oMap.getDuration();
+            }
+        }
+    }catch(af::exception e){
+        qDebug() << "af exception in oMap : " << e.what();
     }
-    else{
-        data=this->oMap.computeBasicMapBatch(this->createBatch(this->batchAllResults.original));
-    }
-    this->batchAllResults.oMap=this->decomposeBatch(data);
-    this->durations.orientationMap=this->oMap.getDuration();
+
 
     //gabor filter
+    for(int i=0;i<this->batchAllResults.oMap.size();i++){
+        this->orientationMapAF=Helper::mat_float2array_float(this->batchAllResults.oMap[i]);
+        this->gaborGPU.setParams(this->batchAllResults.enhanced[i],this->gaborParams);
 
+        if(this->features.useAdvancedOrientationMap) this->gaborGPU.enhanceWithAdvancedOMap();
+        else this->gaborGPU.enhanceWithBasicOMap();
+        this->durations.gaborFilter += this->gaborGPU.getDuration();
+        try{
+            this->batchAllResults.Gabor.push_back(this->gaborGPU.getImgEnhanced());
+        }catch(cv::Exception e){
+        qDebug() << "Gabor" << e.what();
+    }
+    }
 
     //Binarization
-    data=this->createBatch(this->batchAllResults.Gabor);
+    data=this->createBatch(this->batchAllResults.Gabor,false);
     this->timer.start();
     data=this->binary_batch.start(data);
     this->durations.binarization=this->timer.elapsed();
-    this->batchAllResults.binary=this->decomposeBatch(data);
+    try{
+        this->batchAllResults.binary=this->decomposeBatch(data,false);
+    }catch(cv::Exception e){
+        qDebug() << "Binarization" << e.what();
+    }
 
     //thinning
+    try{
     QVector<cv::Mat> skeletons (this->batchAllResults.binary.size());
     this->timer.start();
     for(int i=0;i<this->batchAllResults.binary.size();i++){
@@ -631,7 +684,11 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     }
     this->durations.thinning=this->timer.elapsed();
     this->batchAllResults.skeleton = skeletons;
-
+    }
+    catch(cv::Exception e){
+        qDebug() << "Exception in thinning "<< e.what();
+    }
+    qDebug() << "Preprocessing done";
     emit preprocessingBatchDoneSignal(this->batchAllResults);
     emit preprocessingDurationSignal(this->durations);
 

@@ -1,5 +1,5 @@
 #include "maskbatch.h"
-
+#include <QDebug>
 using namespace af;
 
 maskBatch::maskBatch()
@@ -15,12 +15,13 @@ void maskBatch::setSegmentParams(int blockSize, int threshold){
 
 array maskBatch::start(array enhancedImages){
     if(enhancedImages.isempty()) return NULL;
-    gfor(seq k,0,enhancedImages.dims(2)-1){
+    gfor(seq k,enhancedImages.dims(2)){
         try {
             enhancedImages(span,span,k)=this->createSingleMask(enhancedImages(span,span,k));
 
         } catch (exception e) {
             enhancedImages(span,span,k)=constant(0,enhancedImages.dims(0),enhancedImages.dims(1));
+            qDebug() << "AF exception in MASK " << e.what();
         }
     }
     return enhancedImages;

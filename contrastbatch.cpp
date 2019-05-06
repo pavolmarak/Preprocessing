@@ -1,5 +1,5 @@
 #include "contrastbatch.h"
-
+#include <QDebug>
 using namespace af;
 
 contrastBatch::contrastBatch()
@@ -15,8 +15,15 @@ contrastBatch::contrastBatch()
 array contrastBatch::start(af::array originalImages){
     if(originalImages.isempty()) return NULL;
 
-    gfor(seq k,0,originalImages.dims(2)-1){
-        originalImages(span,span,k)=this->enhSingle(originalImages(span,span,k));
+    gfor(seq k,originalImages.dims(2)){
+        try {
+            for (int i=0;i<originalImages.dims(2);i++) {
+                originalImages(span,span,i)=this->enhSingle(originalImages(span,span,i));
+            }
+            qDebug() << "new count : " << originalImages.dims(2);
+        } catch (af::exception e) {
+            qDebug() << "AF error in contrast enhancement" << e.what();
+        }
     }
     return originalImages;
 }
@@ -24,10 +31,10 @@ array contrastBatch::start(af::array originalImages){
 //histogram equalization for single picture
 //bilateral filter for noise reduction
 array contrastBatch::enhSingle(array singleImage){
-    array hist=histogram(singleImage,256,0,255);
-    singleImage=histEqual(singleImage,hist);
-    singleImage=bilateral(singleImage,this->spatialSigma,this,chromaticSigma);
-    return singleImage;
+    array hist=histogram(singleImage.as(u8),256,0,255);
+    singleImage=histEqual(singleImage.as(u8),hist);
+    af::array filtered=bilateral(singleImage,this->spatialSigma,this->chromaticSigma);
+    return filtered;
 }
 
 void contrastBatch::setParams(float spatialSigma, float chromaticSigma){
