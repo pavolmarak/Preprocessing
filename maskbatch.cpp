@@ -43,3 +43,10 @@ array maskBatch::createSingleMask(array picture){
         return picture;
 
 }
+
+array maskBatch::invertMask(array mask){
+    gfor(seq k,mask.dims(2)){
+        mask(span,span,k)=(255 - mask(span,span,k)).as(u8);
+    }
+    return mask;
+}

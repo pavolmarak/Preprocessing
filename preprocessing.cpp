@@ -671,8 +671,9 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     data=this->binary_batch.start(data);
     this->durations.binarization=this->timer.elapsed();
     //apply mask
-//    af::array mask=this->createBatch(this->batchAllResults.mask,false)/255;
-//    data=data*mask;
+    af::array mask=this->createBatch(this->batchAllResults.mask,false);
+    mask=this->mask_batch.invertMask(mask);
+    data=(data+mask).as(u8);
     this->batchAllResults.binary=this->decomposeBatch(data,false);
 
     //thinning

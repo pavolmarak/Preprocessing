@@ -14,6 +14,8 @@ public:
     maskBatch();
     void setSegmentParams(int blockSize,int threshold);
     af::array start(af::array enhancedImages);
+    af::array invertMask(af::array mask);
+
 };
 
 #endif // MASKBATCH_H
