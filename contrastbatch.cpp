@@ -4,8 +4,8 @@ using namespace af;
 
 contrastBatch::contrastBatch()
 {
-    this->chromaticSigma=80.0F;
-    this->spatialSigma=4.0F;
+    this->chromaticSigma=60.0F;
+    this->spatialSigma=2.0F;
 }
 
 
@@ -35,6 +35,7 @@ array contrastBatch::enhSingle(array singleImage){
     singleImage=histEqual(singleImage.as(u8),hist);
     af::array filtered=bilateral(singleImage,this->spatialSigma,this->chromaticSigma);
     return filtered;
+//    return  singleImage;
 }
 
 void contrastBatch::setParams(float spatialSigma, float chromaticSigma){

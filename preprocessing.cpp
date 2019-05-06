@@ -600,9 +600,9 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     //contrast enhancement
     try{
     data=this->createBatch(this->batchAllResults.original,false);
-    this->timer.start();
+    af::timer::start();
     data=this->contrast_batch.start(data);
-    this->durations.contrastEnhancement=this->timer.elapsed();
+    this->durations.contrastEnhancement=af::timer::stop() * 1000;
     this->batchAllResults.enhanced = this->decomposeBatch(data,false);
     }
     catch(af::exception e){
@@ -611,9 +611,9 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
 
     //segmentation
     try{
-    this->timer.start();
+    af::timer::start();
     data = this->mask_batch.start(data);
-    this->durations.mask=this->timer.elapsed();
+    this->durations.mask=af::timer::stop() * 1000;
     this->batchAllResults.mask=decomposeBatch(data,false);
     }catch(af::exception e){
         qDebug() << "af exception in segmentation : " << e.what();
@@ -628,28 +628,23 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
                    this->oMap.computeAdvancedMapGPU();
                    this->batchAllResults.oMap.push_back(this->oMap.getOMap_advanced());
                    this->durations.orientationMap+=this->oMap.getDuration();
-
             }
         }
         else{
             for(int i=0;i<this->batchAllResults.original.size();i++){
                    this->oMap.setParams(this->batchAllResults.original[i],this->omapParams);
                    this->oMap.computeBasicMapGPU();
-                try{
                    this->batchAllResults.oMap.push_back(this->oMap.getOMap_basic());
-                  } catch(cv::Exception e){
-                qDebug() << "Omap" << e.what();
+                   this->durations.orientationMap+=this->oMap.getDuration();
+                  }
             }
-                    this->durations.orientationMap+=this->oMap.getDuration();
-            }
-        }
     }catch(af::exception e){
         qDebug() << "af exception in oMap : " << e.what();
     }
 
 
     //gabor filter
-     try{
+    try{
     for(int i=0;i<this->batchAllResults.oMap.size();i++){
         this->orientationMapAF=Helper::mat_float2array_float(this->batchAllResults.oMap[i]);
         this->gaborGPU.setParams(this->batchAllResults.enhanced[i],this->gaborParams);
@@ -670,14 +665,10 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     this->timer.start();
     data=this->binary_batch.start(data);
     this->durations.binarization=this->timer.elapsed();
-    //apply mask
-    af::array mask=this->createBatch(this->batchAllResults.mask,false);
-    mask=this->mask_batch.invertMask(mask);
-    data=(data+mask).as(u8);
     this->batchAllResults.binary=this->decomposeBatch(data,false);
 
     //thinning
-    try{
+
     QVector<cv::Mat> skeletons (this->batchAllResults.binary.size());
     this->timer.start();
     for(int i=0;i<this->batchAllResults.binary.size();i++){
@@ -686,10 +677,15 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     }
     this->durations.thinning=this->timer.elapsed();
     this->batchAllResults.skeleton = skeletons;
-    }
-    catch(cv::Exception e){
-        qDebug() << "Exception in thinning "<< e.what();
-    }
+
+
+    //apply mask
+    data=this->createBatch(this->batchAllResults.skeleton,false);
+    af::array mask=this->createBatch(this->batchAllResults.mask,false);
+    mask=this->mask_batch.invertMask(mask);
+    data=(data+mask).as(u8);
+    this->batchAllResults.skeleton=this->decomposeBatch(data,false);
+
     qDebug() << "Preprocessing done";
     emit preprocessingBatchDoneSignal(this->batchAllResults);
     emit preprocessingDurationSignal(this->durations);
