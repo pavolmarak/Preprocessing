@@ -21,7 +21,7 @@ af::array binarizationBatch::adaptiveThresholding(af::array input){
     maxf=minf;
 
     mean=mean-input;
-    input=(mean<this->constant)*0.f + 255.f*(mean>this->constant);
+    input=(mean<this->constant)*255.f + 0.f*(mean>this->constant);
 
     return input;
 }
