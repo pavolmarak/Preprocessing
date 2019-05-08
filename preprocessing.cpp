@@ -595,30 +595,31 @@ void Preprocessing::setBatchModeON(bool value){
 
 void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     //shrink input to fitting size
-    try{
     af::array data=this->createBatch(imgOriginal,false);
-    af::array shrinked((data.dims(0)/this->omapParams.blockSize)*this->omapParams.blockSize,(data.dims(1)/this->omapParams.blockSize)*this->omapParams.blockSize,data.dims(2));
-    for(int i=0;i<imgOriginal.size();i++){
-            shrinked(af::span,af::span,i)=data(seq(shrinked.dims(0)),seq(shrinked.dims(1)));
-    })
-    this->batchAllResults.original=this->decomposeBatch(shrinked,false);
-    data=af::array(1,1);
-    shrinked=af::array(1,1);
-    //reduce size to save mem
-    af::deviceGC();//garbageCollector
+    try{
+        af::array shrinked((data.dims(0)/this->omapParams.blockSize)*this->omapParams.blockSize,(data.dims(1)/this->omapParams.blockSize)*this->omapParams.blockSize,data.dims(2));
+        for(int i=0;i<data.dims(2);i++){
+                shrinked(af::span,af::span,i)=data(af::seq(shrinked.dims(0)),af::seq(shrinked.dims(1)),i);
+        }
+        qDebug()<<data.dims(0) % this->omapParams.blockSize << data.dims(1) % this->omapParams.blockSize ;
+        qDebug()<<shrinked.dims(0) % this->omapParams.blockSize << shrinked.dims(1) % this->omapParams.blockSize ;
+        this->batchAllResults.original=this->decomposeBatch(shrinked,false);
     }catch(af::exception e){
-        qDebug() << "error during shrinking : " << e.what() << "\n\Aborting!";
+        qDebug() << "error during shrinking : " << e.what() << "\nAborting!";
         emit preprocessingErrorSignal(30);
         return;
     }
+    af::deviceGC();//garbageCollector
+
+
 
     //contrast enhancement
     try{
-    data=this->createBatch(this->batchAllResults.original,false);
-    af::timer::start();
-    data=this->contrast_batch.start(data);
-    this->durations.contrastEnhancement=af::timer::stop() * 1000;
-    this->batchAllResults.enhanced = this->decomposeBatch(data,false);
+        data=this->createBatch(this->batchAllResults.original,false);
+        af::timer::start();
+        data=this->contrast_batch.start(data);
+        this->durations.contrastEnhancement=af::timer::stop() * 1000;
+        this->batchAllResults.enhanced = this->decomposeBatch(data,false);
     }
     catch(af::exception e){
         qDebug() << "af exception in contrast enhancement : " << e.what() <<"\nAborting";
@@ -629,10 +630,10 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
 
     //segmentation
     try{
-    af::timer::start();
-    data = this->mask_batch.start(data);
-    this->durations.mask=af::timer::stop() * 1000;
-    this->batchAllResults.mask=decomposeBatch(data,false);
+        af::timer::start();
+        data = this->mask_batch.start(data);
+        this->durations.mask=af::timer::stop() * 1000;
+        this->batchAllResults.mask=decomposeBatch(data,false);
     }catch(af::exception e){
         qDebug() << "af exception in segmentation : " << e.what() <<"\nAborting";
         this->cleanResults();
