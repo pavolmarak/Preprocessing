@@ -18,7 +18,7 @@ array contrastBatch::start(af::array originalImages){
     int height = originalImages.dims(0);
 
     try{
-    originalImages =  Helper::Array3D_2Array2D(originalImages);
+    originalImages =  Helper::Array3D_2_Array2D(originalImages);
     originalImages =  this->enhSingle(originalImages);
     originalImages =  Helper::Array2D_2_Array3D(originalImages,height);
     }catch(af::exception e){
