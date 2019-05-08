@@ -1,6 +1,6 @@
 #ifndef BINARIZATIONBATCH_H
 #define BINARIZATIONBATCH_H
-#include "arrayfire.h"
+#include "preprocessing_config.h"
 
 class binarizationBatch
 {

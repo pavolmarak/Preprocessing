@@ -1,5 +1,6 @@
 #include "contrastbatch.h"
 #include <QDebug>
+
 using namespace af;
 
 contrastBatch::contrastBatch()
@@ -18,8 +19,8 @@ array contrastBatch::start(af::array originalImages){
 
     try{
     originalImages =  Helper::Array3D_2Array2D(originalImages);
-    originalImages = this->enhSingle(originalImages);
-    originalImages = Helper::Array2D_2_Array3D(originalImages,height);
+    originalImages =  this->enhSingle(originalImages);
+    originalImages =  Helper::Array2D_2_Array3D(originalImages,height);
     }catch(af::exception e){
         qDebug() << "ArrayFire exception in batched contrast enhancement : \n"<<e.what();
     }

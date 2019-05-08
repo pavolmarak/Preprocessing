@@ -1,7 +1,7 @@
 #ifndef CONTRASTBATCH_H
 #define CONTRASTBATCH_H
 
-#include "arrayfire.h"
+#include "preprocessing_config.h"
 
 
 
