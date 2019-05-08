@@ -123,7 +123,7 @@ public:
     static inline af::array Array2D_2_Array3D(af::array& batch,int originalHeight){
         af::array array;
         for(int i=0;i<batch.dims(0)/originalHeight;i++){
-            array=join(2,array,batch((af::seq((i*originalHeight),(i*originalHeight+originalHeight-1))),span));
+            array=join(2,array,batch((af::seq((i*originalHeight),(i*originalHeight+originalHeight-1))),af::span));
         }
         return array;
     }
