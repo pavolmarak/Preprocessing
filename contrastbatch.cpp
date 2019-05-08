@@ -22,7 +22,7 @@ array contrastBatch::start(af::array originalImages){
     originalImages =  this->enhSingle(originalImages);
     originalImages =  Helper::Array2D_2_Array3D(originalImages,height);
     }catch(af::exception e){
-        qDebug() << "ArrayFire exception in batched contrast enhancement : \n"<<e.what();
+        return af::array(0,0);
     }
     return originalImages;
 
