@@ -354,7 +354,7 @@ void Preprocessing::start()
 
             //if batchmode ON -> start BatchPreprocessing
             if(this->BatchMode){
-                if(this->inputParams.mode==image|| this->inputParams.mode == imagePath){
+                if(this->inputParams.mode == image|| this->inputParams.mode == imagePath){
                     QVector<cv::Mat> image (1);
                     image[0]=this->inputParams.imgOriginal;
                     this->startBatchProcess(image);
@@ -594,9 +594,9 @@ void Preprocessing::setBatchModeON(bool value){
 
 
 void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
-   this->batchAllResults.original=imgOriginal;
-
+    this->batchAllResults.original=imgOriginal;
     af::array data;
+
     //contrast enhancement
     try{
     data=this->createBatch(this->batchAllResults.original,false);
@@ -606,7 +606,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     this->batchAllResults.enhanced = this->decomposeBatch(data,false);
     }
     catch(af::exception e){
-        qDebug() << "af exception in contrast enhancement : " << e.what();
+        this->preprocessingError(30);
     }
 
     //segmentation
@@ -644,7 +644,6 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
 
 
     //gabor filter
-    try{
     for(int i=0;i<this->batchAllResults.oMap.size();i++){
         this->orientationMapAF=Helper::mat_float2array_float(this->batchAllResults.oMap[i]);
         this->gaborGPU.setParams(this->batchAllResults.enhanced[i],this->gaborParams);
@@ -655,10 +654,6 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
 
         this->batchAllResults.Gabor.push_back(this->gaborGPU.getImgEnhanced());
     }
-    }catch(cv::Exception e){
-        qDebug() << "Gabor" << e.what();
-    }
-
 
     //Binarization
     data=this->createBatch(this->batchAllResults.Gabor,false);
@@ -668,7 +663,6 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     this->batchAllResults.binary=this->decomposeBatch(data,false);
 
     //thinning
-
     QVector<cv::Mat> skeletons (this->batchAllResults.binary.size());
     this->timer.start();
     for(int i=0;i<this->batchAllResults.binary.size();i++){

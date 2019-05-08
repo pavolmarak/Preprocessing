@@ -10,32 +10,31 @@ contrastBatch::contrastBatch()
 
 
 //starts the proccess of contrast enhancement,
-//enhancing is done on every picture in GFOR
+//stack images alongside 0th dimension
 //returns array of enhanced images
+//recreate original data pattern (3D array)
 array contrastBatch::start(af::array originalImages){
-    if(originalImages.isempty()) return NULL;
+    int height = originalImages.dims(0);
 
-    gfor(seq k,originalImages.dims(2)){
-        try {
-            for (int i=0;i<originalImages.dims(2);i++) {
-                originalImages(span,span,i)=this->enhSingle(originalImages(span,span,i));
-            }
-            qDebug() << "new count : " << originalImages.dims(2);
-        } catch (af::exception e) {
-            qDebug() << "AF error in contrast enhancement" << e.what();
-        }
+    try{
+    originalImages =  Helper::Array3D_2Array2D(originalImages);
+    originalImages = this->enhSingle(originalImages);
+    originalImages = Helper::Array2D_2_Array3D(originalImages,height);
+    }catch(af::exception e){
+        qDebug() << "ArrayFire exception in batched contrast enhancement : \n"<<e.what();
     }
     return originalImages;
+
+
 }
 
-//histogram equalization for single picture
-//bilateral filter for noise reduction
+//applies histEqual and bilateral filter for smoothing
 array contrastBatch::enhSingle(array singleImage){
     array hist=histogram(singleImage.as(u8),256,0,255);
     singleImage=histEqual(singleImage.as(u8),hist);
     af::array filtered=bilateral(singleImage,this->spatialSigma,this->chromaticSigma);
     return filtered;
-//    return  singleImage;
+
 }
 
 void contrastBatch::setParams(float spatialSigma, float chromaticSigma){

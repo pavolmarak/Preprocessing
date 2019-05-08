@@ -109,6 +109,25 @@ public:
     static inline QByteArray QStringToQByteArray(const QString &x) {
         return x.toUtf8();
     }
+
+
+    static inline af::array Array3D_2_Array2D(af::array& array){
+        af::array batch;
+        for(int i=0;i<array.dims(2);i++){
+            batch=af::join(0,batch,array(af::span,af::span,i));
+        }
+        return batch;
+    }
+
+
+    static inline af::array Array2D_2_Array3D(af::array& batch,int originalHeight){
+        af::array array;
+        for(int i=0;i<batch.dims(0)/originalHeight;i++){
+            array=join(2,array,batch((seq((i*originalHeight),(i*originalHeight+originalHeight-1))),span));
+        }
+        return array;
+    }
+
 };
 
 #endif // HELPER_H
