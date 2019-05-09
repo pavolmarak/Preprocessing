@@ -111,7 +111,7 @@ public:
     }
 
 
-    static inline af::array Array3D_2_Array2D(af::array& array){
+    static inline af::array Array3D_2_Array2D(const af::array& array){
         af::array batch;
         for(int i=0;i<array.dims(2);i++){
             batch=af::join(0,batch,array(af::span,af::span,i));
@@ -120,7 +120,7 @@ public:
     }
 
 
-    static inline af::array Array2D_2_Array3D(af::array& batch,int originalHeight){
+    static inline af::array Array2D_2_Array3D(const af::array& batch,int originalHeight){
         af::array array;
         for(int i=0;i<batch.dims(0)/originalHeight;i++){
             array=join(2,array,batch((af::seq((i*originalHeight),(i*originalHeight+originalHeight-1))),af::span));
@@ -129,7 +129,7 @@ public:
     }
 
 
-    static inline af::array QVectorMat_2_Array(QVector<cv::Mat> MatImages, bool isFloat){
+    static inline af::array QVectorMat_2_Array(const QVector<cv::Mat>& MatImages, bool isFloat){
         int count=MatImages.size();
         af::array Batch(MatImages.last().rows,MatImages.last().cols,count);
         for (int i=0;i<count;i++) {
@@ -141,7 +141,7 @@ public:
         return Batch;
     }
 
-    static inline QVector<cv::Mat> Array_2_QVectorMat(af::array batch, bool isFloat){
+    static inline QVector<cv::Mat> Array_2_QVectorMat(const af::array& batch, bool isFloat){
         QVector<cv::Mat> data;
         for(int i=0;i<batch.dims(2);i++)
         {
@@ -153,5 +153,5 @@ public:
         return data;
     }
 
-
+};
 #endif // HELPER_H
