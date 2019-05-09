@@ -618,28 +618,15 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
         return;
     }
 
-    //computeOmap --- TODO: paralelize
+
     try{
         data=Helper::QVectorMat_2_Array(this->batchAllResults.original,false);
         if(this->features.useAdvancedOrientationMap){
-//            for(int i=0;i<this->batchAllResults.original.size();i++){
-//                   this->oMap.setParams(this->batchAllResults.original[i],this->omapParams);
-//                   this->oMap.computeAdvancedMapGPU();
-//                   this->batchAllResults.oMap.push_back(this->oMap.getOMap_advanced());
-//                   this->durations.orientationMap+=this->oMap.getDuration();
-
-//            }
             data = this->oMap.computeAdvancedMapBatch(data,this->omapParams);
         }
         else{
-//            for(int i=0;i<this->batchAllResults.original.size();i++){
-//                   this->oMap.setParams(this->batchAllResults.original[i],this->omapParams);
-//                   this->oMap.computeBasicMapGPU();
-//                   this->batchAllResults.oMap.push_back(this->oMap.getOMap_basic());
-//                   this->durations.orientationMap+=this->oMap.getDuration();
-//                  }
             data=this->oMap.computeBasicMapBatch(data,this->omapParams);
-            }
+        }
         this->batchAllResults.oMap=Helper::Array_2_QVectorMat(data,true);
         this->durations.orientationMap=this->oMap.getDuration();
     }catch(af::exception e){
