@@ -251,13 +251,19 @@ float OrientationMap::getDuration() const
 
 //----------------------wrappers for batch processing-----------------------------
 af::array OrientationMap::computeBasicMapBatch(af::array imgOriginal,OMAP_PARAMS omap){
+    int height = imgOriginal.dims(0);
     imgOriginal=Helper::Array3D_2_Array2D(imgOriginal);
     this->setParams(Helper::array_uchar2mat_uchar(imgOriginal),omap);
     this->computeBasicMapGPU();
-    imgOriginal=Helper::Array2D_2_Array3D(this->getOMapAF_basic(),imgOriginal.dims(0));
+    imgOriginal=Helper::Array2D_2_Array3D(this->getOMapAF_basic(),height);
     return imgOriginal;
 }
 
 af::array OrientationMap::computeAdvancedMapBatch(af::array imgOriginal, OMAP_PARAMS omap){
-
+    int height = imgOriginal.dims(0);
+    imgOriginal=Helper::Array3D_2_Array2D(imgOriginal);
+    this->setParams(Helper::array_uchar2mat_uchar(imgOriginal),omap);
+    this->computeAdvancedMapGPU();
+    imgOriginal=Helper::Array2D_2_Array3D(this->getOMapAF_advanced(),height);
+    return imgOriginal;
 }
