@@ -256,7 +256,7 @@ af::array OrientationMap::computeBasicMapBatch(af::array imgOriginal,OMAP_PARAMS
     this->setParams(Helper::array_uchar2mat_uchar(imgOriginal),omap);
     this->computeBasicMapGPU();
     imgOriginal=this->getOMapAF_basic();
-    imgOriginal=Helper::Array2D_2_Array3D(imgOriginal,height);
+    imgOriginal=Helper::Array2D_2_Array3D(imgOriginal,height/this->omap.blockSize);
     return imgOriginal;
 }
 

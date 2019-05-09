@@ -660,11 +660,11 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     }
 
     //Binarization
-    data=this->createBatch(this->batchAllResults.Gabor,false);
+    data=Helper::QVectorMat_2_Array(this->batchAllResults.Gabor,false);
     this->timer.start();
     data=this->binary_batch.start(data);
     this->durations.binarization=this->timer.elapsed();
-    this->batchAllResults.binary=this->decomposeBatch(data,false);
+    this->batchAllResults.binary=Helper::Array_2_QVectorMat(data,false);
 
     //thinning -- TODO - paralelize by threads
     QVector<cv::Mat> skeletons (this->batchAllResults.binary.size());
@@ -678,11 +678,11 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
 
 
     //apply mask
-    data=this->createBatch(this->batchAllResults.skeleton,false);
-    af::array mask=this->createBatch(this->batchAllResults.mask,false);
+    data=Helper::QVectorMat_2_Array(this->batchAllResults.skeleton,false);
+    af::array mask=Helper::QVectorMat_2_Array(this->batchAllResults.mask,false);
     mask=this->mask_batch.invertMask(mask);
     data=(data+mask).as(u8);
-    this->batchAllResults.skeleton=this->decomposeBatch(data,false);
+    this->batchAllResults.skeleton=Helper::Array_2_QVectorMat(data,false);
 
     qDebug() << "Preprocessing done";
     emit preprocessingBatchDoneSignal(this->batchAllResults);
