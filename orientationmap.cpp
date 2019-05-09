@@ -249,91 +249,15 @@ float OrientationMap::getDuration() const
     return duration;
 }
 
-
-//functions for batch mode -> same functionality but returns Arrays for our purposes
-af::array OrientationMap::computeBasicMapBatch(af::array imgOriginal){
-//    af::timer::start();
-
-//    this->imgInputAF = Helper::mat_uchar2array_uchar(this->imgInput);
-
-    af::array Gx, Gy;
-    int height, width;
-    af::array Vx, Vy;
-    height = floor(imgOriginal.dims(0) / this->omap.blockSize);
-    width = floor(imgOriginal.dims(1) / this->omap.blockSize);
-    int paddingX = imgOriginal.dims(1) - width * this->omap.blockSize;
-    int paddingY = imgOriginal.dims(0) - height * this->omap.blockSize;
-
-    // vypocet gradientov x a y
-    af::sobel(Gx, Gy, imgOriginal);
-
-    // vypocet Vx,Vy a Theta
-    af::array GxCut = Gx(af::seq(paddingY / 2, height * this->omap.blockSize + paddingY / 2 - 1), af::seq(paddingX / 2, width * this->omap.blockSize+paddingX / 2 - 1));
-    af::array GyCut = Gy(af::seq(paddingY / 2, height * this->omap.blockSize + paddingY / 2 - 1), af::seq(paddingX / 2, width * this->omap.blockSize + paddingX / 2 - 1));
-
-    GxCut = af::unwrap(GxCut, this->omap.blockSize, this->omap.blockSize, this->omap.blockSize, this->omap.blockSize);
-    GyCut = af::unwrap(GyCut, this->omap.blockSize, this->omap.blockSize, this->omap.blockSize, this->omap.blockSize);
-
-    Vx =  af::sum(2 * GxCut * GyCut);
-    Vy =  af::sum(af::pow(GxCut, 2) - af::pow(GyCut, 2));
-    af::array basicOmap;
-    basicOmap = 0.5* af::atan2(Vx.as(f32), Vy.as(f32));
-
-    basicOmap = af::moddims(basicOmap, height, width);
-
-    // vyhladenie smerovej mapy
-    af::array sinTheta = af::sin(2 * basicOmap);
-    af::array cosTheta = af::cos(2 * basicOmap);
-
-    af::array gk = af::gaussianKernel(this->omap.gaussBlurBasic.blockSize, this->omap.gaussBlurBasic.blockSize, this->omap.gaussBlurBasic.sigma, this->omap.gaussBlurBasic.sigma);
-
-    sinTheta = af::convolve(sinTheta, gk);
-    cosTheta = af::convolve(cosTheta, gk);
-
-    basicOmap = 0.5* af::atan2(sinTheta, cosTheta);
-
-//    this->duration = af::timer::stop() * 1000;
-    return basicOmap;
+//----------------------wrappers for batch processing-----------------------------
+af::array OrientationMap::computeBasicMapBatch(af::array imgOriginal,OMAP_PARAMS omap){
+    imgOriginal=Helper::Array3D_2_Array2D(imgOriginal);
+    this->setParams(Helper::array_uchar2mat_uchar(imgOriginal),omap);
+    this->computeBasicMapGPU();
+    imgOriginal=Helper::Array2D_2_Array3D(this->getOMapAF_basic(),imgOriginal.dims(0));
+    return imgOriginal;
 }
 
-af::array OrientationMap::computeAdvancedMapBatch(af::array imgOriginal){
-    //compute basic omap
+af::array OrientationMap::computeAdvancedMapBatch(af::array imgOriginal, OMAP_PARAMS omap){
 
-    try{
-        for (int i=0;i<imgOriginal.dims(2);i++) {
-
-        }
-    }
-    catch(af::exception e){
-        qDebug() << "Exception in basicOMap" << e.what();
-    }
-
-    // basic O-Map expansion
-
-    for (int i=0;i<this->oMapAF_advanced.dims(2);i++) {
-    this->oMapAF_advanced(af::span,af::span,i) = af::moddims(this->oMapAF_basic(af::span,af::span,i), 1,this->oMapAF_basic.dims(0) * this->oMapAF_basic.dims(1));
-    this->oMapAF_advanced(af::span,af::span,i) = af::tile(this->oMapAF_advanced(af::span,af::span,i), this->omap.blockSize * this->omap.blockSize);
-    this->oMapAF_advanced(af::span,af::span,i) = af::wrap(this->oMapAF_advanced(af::span,af::span,i),
-                                     this->oMapAF_basic.dims(0) * this->omap.blockSize,
-                                     this->oMapAF_basic.dims(1) * this->omap.blockSize,
-                                     this->omap.blockSize,
-                                     this->omap.blockSize,
-                                     this->omap.blockSize,
-                                     this->omap.blockSize);
-
-    // smoothing the expanded O-Map
-    af::array sinTheta = af::sin(2 * this->oMapAF_advanced(af::span,af::span,i));
-    af::array cosTheta = af::cos(2 * this->oMapAF_advanced(af::span,af::span,i));
-    af::array gk = af::gaussianKernel(this->omap.gaussBlurAdvanced.blockSize,
-                                      this->omap.gaussBlurAdvanced.blockSize,
-                                      this->omap.gaussBlurAdvanced.sigma,
-                                      this->omap.gaussBlurAdvanced.sigma);
-
-    sinTheta = af::convolve(sinTheta, gk);
-    cosTheta = af::convolve(cosTheta, gk);
-
-    this->oMapAF_advanced(af::span,af::span,i) = 0.5* af::atan2(sinTheta, cosTheta);
-
-    }
-      return this->oMapAF_advanced;
 }

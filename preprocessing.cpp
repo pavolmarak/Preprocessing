@@ -316,29 +316,6 @@ int Preprocessing::loadInput(QString inputPath)
     return 1;
 }
 
-af::array Preprocessing::createBatch(QVector<cv::Mat> MatImages, bool isFloat){
-    int count=MatImages.size();
-    af::array Batch(MatImages.last().rows,MatImages.last().cols,count);
-    for (int i=0;i<count;i++) {
-        if(isFloat)
-        Batch(af::span,af::span,i)=Helper::mat_float2array_float(MatImages[i]);
-        else
-        Batch(af::span,af::span,i)=Helper::mat_uchar2array_uchar(MatImages[i]);
-    }
-    return Batch;
-}
-
-QVector<cv::Mat> Preprocessing::decomposeBatch(af::array batch, bool isFloat){
-    QVector<cv::Mat> data;
-    for(int i=0;i<batch.dims(2);i++)
-    {
-        if(isFloat)
-            data.push_back(Helper::array_float2mat_float(batch(af::span,af::span,i)));
-        else
-            data.push_back(Helper::array_uchar2mat_uchar(batch(af::span,af::span,i)));
-    }
-    return data;
-}
 
 // PREPROCESSING START
 
@@ -595,7 +572,7 @@ void Preprocessing::setBatchModeON(bool value){
 
 void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     //shrink input to fitting size
-    af::array data=this->createBatch(imgOriginal,false);
+    af::array data=Helper::QVectorMat_2_Array(imgOriginal,false);
     try{
         af::array shrinked((data.dims(0)/this->omapParams.blockSize)*this->omapParams.blockSize,(data.dims(1)/this->omapParams.blockSize)*this->omapParams.blockSize,data.dims(2));
         for(int i=0;i<data.dims(2);i++){
@@ -603,7 +580,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
         }
         qDebug()<<data.dims(0) % this->omapParams.blockSize << data.dims(1) % this->omapParams.blockSize ;
         qDebug()<<shrinked.dims(0) % this->omapParams.blockSize << shrinked.dims(1) % this->omapParams.blockSize ;
-        this->batchAllResults.original=this->decomposeBatch(shrinked,false);
+        this->batchAllResults.original=Helper::Array_2_QVectorMat(shrinked,false);
     }catch(af::exception e){
         qDebug() << "error during shrinking : " << e.what() << "\nAborting!";
         emit preprocessingErrorSignal(30);
@@ -615,11 +592,11 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
 
     //contrast enhancement
     try{
-        data=this->createBatch(this->batchAllResults.original,false);
+        data=Helper::QVectorMat_2_Array(this->batchAllResults.original,false);
         af::timer::start();
         data=this->contrast_batch.start(data);
         this->durations.contrastEnhancement=af::timer::stop() * 1000;
-        this->batchAllResults.enhanced = this->decomposeBatch(data,false);
+        this->batchAllResults.enhanced = Helper::Array_2_QVectorMat(data,false);
     }
     catch(af::exception e){
         qDebug() << "af exception in contrast enhancement : " << e.what() <<"\nAborting";
@@ -633,7 +610,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
         af::timer::start();
         data = this->mask_batch.start(data);
         this->durations.mask=af::timer::stop() * 1000;
-        this->batchAllResults.mask=decomposeBatch(data,false);
+        this->batchAllResults.mask=Helper::Array_2_QVectorMat(data,false);
     }catch(af::exception e){
         qDebug() << "af exception in segmentation : " << e.what() <<"\nAborting";
         this->cleanResults();
@@ -641,7 +618,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
         return;
     }
 
-    //computeOmap
+    //computeOmap --- TODO: paralelize
     try{
 
         if(this->features.useAdvancedOrientationMap){
@@ -665,7 +642,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     }
 
 
-    //gabor filter
+    //gabor filter -- TODO: paralelize
     for(int i=0;i<this->batchAllResults.oMap.size();i++){
         this->orientationMapAF=Helper::mat_float2array_float(this->batchAllResults.oMap[i]);
         this->gaborGPU.setParams(this->batchAllResults.enhanced[i],this->gaborParams);
@@ -684,7 +661,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     this->durations.binarization=this->timer.elapsed();
     this->batchAllResults.binary=this->decomposeBatch(data,false);
 
-    //thinning
+    //thinning -- TODO - paralelize by threads
     QVector<cv::Mat> skeletons (this->batchAllResults.binary.size());
     this->timer.start();
     for(int i=0;i<this->batchAllResults.binary.size();i++){

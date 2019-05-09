@@ -128,6 +128,30 @@ public:
         return array;
     }
 
-};
+
+    static inline af::array QVectorMat_2_Array(QVector<cv::Mat> MatImages, bool isFloat){
+        int count=MatImages.size();
+        af::array Batch(MatImages.last().rows,MatImages.last().cols,count);
+        for (int i=0;i<count;i++) {
+            if(isFloat)
+            Batch(af::span,af::span,i)=Helper::mat_float2array_float(MatImages[i]);
+            else
+            Batch(af::span,af::span,i)=Helper::mat_uchar2array_uchar(MatImages[i]);
+        }
+        return Batch;
+    }
+
+    static inline QVector<cv::Mat> Array_2_QVectorMat(af::array batch, bool isFloat){
+        QVector<cv::Mat> data;
+        for(int i=0;i<batch.dims(2);i++)
+        {
+            if(isFloat)
+                data.push_back(Helper::array_float2mat_float(batch(af::span,af::span,i)));
+            else
+                data.push_back(Helper::array_uchar2mat_uchar(batch(af::span,af::span,i)));
+        }
+        return data;
+    }
+
 
 #endif // HELPER_H
