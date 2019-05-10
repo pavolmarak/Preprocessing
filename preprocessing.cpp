@@ -618,7 +618,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
         return;
     }
 
-
+    //OMap
     try{
         data=Helper::QVectorMat_2_Array(this->batchAllResults.original,false);
         if(this->features.useAdvancedOrientationMap){
@@ -645,6 +645,15 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
 
         this->batchAllResults.Gabor.push_back(this->gaborGPU.getImgEnhanced());
     }
+    //paralel gabor
+    data=Helper::Array3D_2_Array2D(Helper::QVectorMat_2_Array(this->batchAllResults.enhanced,false));//enhanced images to 2d array
+    this->orientationMapAF=Helper::Array3D_2_Array2D(Helper::QVectorMat_2_Array(this->batchAllResults.oMap,true));//orientation mat to 2d array
+    this->gaborGPU.setParams(Helper::array_uchar2mat_uchar(data),this->gaborParams);
+    if(this->features.useAdvancedOrientationMap) this->gaborGPU.enhanceWithAdvancedOMap();
+    else this->gaborGPU.enhanceWithBasicOMap();
+    this->durations.gaborFilter = this->gaborGPU.getDuration();
+    this->batchAllResults.Gabor=Helper::Array_2_QVectorMat(Helper::Array2D_2_Array3D(Helper::mat_uchar2array_uchar(this->gaborGPU.getImgEnhanced()),this->batchAllResults.enhanced[i].rows),false);
+
 
     //Binarization
     data=Helper::QVectorMat_2_Array(this->batchAllResults.Gabor,false);
