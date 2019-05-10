@@ -633,7 +633,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
 
 
     //gabor filter -- TODO: paralelize
-    try{
+//    try{
         data=Helper::Array3D_2_Array2D(Helper::QVectorMat_2_Array(this->batchAllResults.enhanced,false));//enhanced images to 2d array
         this->orientationMapAF=Helper::Array3D_2_Array2D(Helper::QVectorMat_2_Array(this->batchAllResults.oMap,true));//orientation mat to 2d array
         this->gaborGPU.setParams(Helper::array_uchar2mat_uchar(data),this->gaborParams);
@@ -643,15 +643,25 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
 
         this->durations.gaborFilter = this->gaborGPU.getDuration();
 //        this->batchAllResults.Gabor=Helper::Array_2_QVectorMat(Helper::Array2D_2_Array3D(Helper::mat_uchar2array_uchar(this->gaborGPU.getImgEnhanced()),this->batchAllResults.enhanced[0].rows),false);
+    try{
         data=Helper::mat_uchar2array_uchar(this->gaborGPU.getImgEnhanced());
-        qDebug() << data.dims(0) << data.dims(1) << data.dims(2);
+        }catch(af::exception e){
+            qDebug() << " data=Helper::mat_uchar2array_uchar(this->gaborGPU.getImgEnhanced())" << e.what();
+        }
+//        qDebug() << data.dims(0) << data.dims(1) << data.dims(2);
+
+        try{
         data=Helper::Array2D_2_Array3D(data,this->batchAllResults.enhanced[0].rows);
-        qDebug() << data.dims(0) << data.dims(1) << data.dims(2);
+        }catch(af::exception e){
+            qDebug()<<"        data=Helper::Array2D_2_Array3D(data,this->batchAllResults.enhanced[0].rows);" << e.what();
+        }
+//        qDebug() << data.dims(0) << data.dims(1) << data.dims(2);
+        try{
         this->batchAllResults.Gabor=Helper::Array_2_QVectorMat(data,false);
 //        this->batchAllResults.Gabor=this->gaborGPU.getImgEnhanced();
-    }catch(af::exception e){
-        qDebug() << "Error in Gabor filter" << e.what();
-    }
+        }catch(af::exception e){
+            qDebug() << "Error in Gabor filter" << e.what();
+        }
 
     //Binarization
     data=Helper::QVectorMat_2_Array(this->batchAllResults.Gabor,false);
