@@ -652,7 +652,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     if(this->features.useAdvancedOrientationMap) this->gaborGPU.enhanceWithAdvancedOMap();
     else this->gaborGPU.enhanceWithBasicOMap();
     this->durations.gaborFilter = this->gaborGPU.getDuration();
-    this->batchAllResults.Gabor=Helper::Array_2_QVectorMat(Helper::Array2D_2_Array3D(Helper::mat_uchar2array_uchar(this->gaborGPU.getImgEnhanced()),this->batchAllResults.enhanced[i].rows),false);
+    this->batchAllResults.Gabor=Helper::Array_2_QVectorMat(Helper::Array2D_2_Array3D(Helper::mat_uchar2array_uchar(this->gaborGPU.getImgEnhanced()),this->batchAllResults.enhanced[0].rows),false);
 
 
     //Binarization
