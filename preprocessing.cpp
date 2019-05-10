@@ -578,8 +578,6 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
         for(int i=0;i<data.dims(2);i++){
                 shrinked(af::span,af::span,i)=data(af::seq(shrinked.dims(0)),af::seq(shrinked.dims(1)),i);
         }
-        qDebug()<<data.dims(0) % this->omapParams.blockSize << data.dims(1) % this->omapParams.blockSize ;
-        qDebug()<<shrinked.dims(0) % this->omapParams.blockSize << shrinked.dims(1) % this->omapParams.blockSize ;
         this->batchAllResults.original=Helper::Array_2_QVectorMat(shrinked,false);
     }catch(af::exception e){
         qDebug() << "error during shrinking : " << e.what() << "\nAborting!";
@@ -635,25 +633,19 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
 
 
     //gabor filter -- TODO: paralelize
-//    for(int i=0;i<this->batchAllResults.oMap.size();i++){
-//        this->orientationMapAF=Helper::mat_float2array_float(this->batchAllResults.oMap[i]);
-//        this->gaborGPU.setParams(this->batchAllResults.enhanced[i],this->gaborParams);
+    try{
+        data=Helper::Array3D_2_Array2D(Helper::QVectorMat_2_Array(this->batchAllResults.enhanced,false));//enhanced images to 2d array
+        this->orientationMapAF=Helper::Array3D_2_Array2D(Helper::QVectorMat_2_Array(this->batchAllResults.oMap,true));//orientation mat to 2d array
+        this->gaborGPU.setParams(Helper::array_uchar2mat_uchar(data),this->gaborParams);
 
-//        if(this->features.useAdvancedOrientationMap) this->gaborGPU.enhanceWithAdvancedOMap();
-//        else this->gaborGPU.enhanceWithBasicOMap();
-//        this->durations.gaborFilter += this->gaborGPU.getDuration();
+        if(this->features.useAdvancedOrientationMap) this->gaborGPU.enhanceWithAdvancedOMap();
+        else this->gaborGPU.enhanceWithBasicOMap();
 
-//        this->batchAllResults.Gabor.push_back(this->gaborGPU.getImgEnhanced());
-//    }
-    //paralel gabor
-    data=Helper::Array3D_2_Array2D(Helper::QVectorMat_2_Array(this->batchAllResults.enhanced,false));//enhanced images to 2d array
-    this->orientationMapAF=Helper::Array3D_2_Array2D(Helper::QVectorMat_2_Array(this->batchAllResults.oMap,true));//orientation mat to 2d array
-    this->gaborGPU.setParams(Helper::array_uchar2mat_uchar(data),this->gaborParams);
-    if(this->features.useAdvancedOrientationMap) this->gaborGPU.enhanceWithAdvancedOMap();
-    else this->gaborGPU.enhanceWithBasicOMap();
-    this->durations.gaborFilter = this->gaborGPU.getDuration();
-    this->batchAllResults.Gabor=Helper::Array_2_QVectorMat(Helper::Array2D_2_Array3D(Helper::mat_uchar2array_uchar(this->gaborGPU.getImgEnhanced()),this->batchAllResults.enhanced[0].rows),false);
-
+        this->durations.gaborFilter = this->gaborGPU.getDuration();
+        this->batchAllResults.Gabor=Helper::Array_2_QVectorMat(Helper::Array2D_2_Array3D(Helper::mat_uchar2array_uchar(this->gaborGPU.getImgEnhanced()),this->batchAllResults.enhanced[0].rows),false);
+    }catch(af::exception e){
+        qDebug() << "Error in Gabor filter" << e.what();
+    }
 
     //Binarization
     data=Helper::QVectorMat_2_Array(this->batchAllResults.Gabor,false);
