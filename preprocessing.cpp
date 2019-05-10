@@ -635,16 +635,16 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
 
 
     //gabor filter -- TODO: paralelize
-    for(int i=0;i<this->batchAllResults.oMap.size();i++){
-        this->orientationMapAF=Helper::mat_float2array_float(this->batchAllResults.oMap[i]);
-        this->gaborGPU.setParams(this->batchAllResults.enhanced[i],this->gaborParams);
+//    for(int i=0;i<this->batchAllResults.oMap.size();i++){
+//        this->orientationMapAF=Helper::mat_float2array_float(this->batchAllResults.oMap[i]);
+//        this->gaborGPU.setParams(this->batchAllResults.enhanced[i],this->gaborParams);
 
-        if(this->features.useAdvancedOrientationMap) this->gaborGPU.enhanceWithAdvancedOMap();
-        else this->gaborGPU.enhanceWithBasicOMap();
-        this->durations.gaborFilter += this->gaborGPU.getDuration();
+//        if(this->features.useAdvancedOrientationMap) this->gaborGPU.enhanceWithAdvancedOMap();
+//        else this->gaborGPU.enhanceWithBasicOMap();
+//        this->durations.gaborFilter += this->gaborGPU.getDuration();
 
-        this->batchAllResults.Gabor.push_back(this->gaborGPU.getImgEnhanced());
-    }
+//        this->batchAllResults.Gabor.push_back(this->gaborGPU.getImgEnhanced());
+//    }
     //paralel gabor
     data=Helper::Array3D_2_Array2D(Helper::QVectorMat_2_Array(this->batchAllResults.enhanced,false));//enhanced images to 2d array
     this->orientationMapAF=Helper::Array3D_2_Array2D(Helper::QVectorMat_2_Array(this->batchAllResults.oMap,true));//orientation mat to 2d array
