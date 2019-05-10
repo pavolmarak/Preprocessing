@@ -642,7 +642,13 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
         else this->gaborGPU.enhanceWithBasicOMap();
 
         this->durations.gaborFilter = this->gaborGPU.getDuration();
-        this->batchAllResults.Gabor=Helper::Array_2_QVectorMat(Helper::Array2D_2_Array3D(Helper::mat_uchar2array_uchar(this->gaborGPU.getImgEnhanced()),this->batchAllResults.enhanced[0].rows),false);
+//        this->batchAllResults.Gabor=Helper::Array_2_QVectorMat(Helper::Array2D_2_Array3D(Helper::mat_uchar2array_uchar(this->gaborGPU.getImgEnhanced()),this->batchAllResults.enhanced[0].rows),false);
+        data=Helper::mat_uchar2array_uchar(this->gaborGPU.getImgEnhanced());
+        qDebug() << data.dims(0) << data.dims(1) << data.dims(2);
+        data=Helper::Array2D_2_Array3D(data,this->batchAllResults.enhanced[0].rows);
+        qDebug() << data.dims(0) << data.dims(1) << data.dims(2);
+        this->batchAllResults.Gabor=Helper::Array_2_QVectorMat(data,false);
+//        this->batchAllResults.Gabor=this->gaborGPU.getImgEnhanced();
     }catch(af::exception e){
         qDebug() << "Error in Gabor filter" << e.what();
     }
