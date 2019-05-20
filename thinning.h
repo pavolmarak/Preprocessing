@@ -13,8 +13,9 @@ class Thinning : public QObject
 
 public:
     explicit Thinning(QObject *parent = nullptr);
-
+    Thinning(QVector<cv::Mat1b> binaryImages);
     static const int NOLIMIT = INT_MAX;
+
 
     bool thinGuoHallFast(const cv::Mat1b& img, bool inverted, bool crop_img_before = false, int max_iters = NOLIMIT);
 
@@ -22,7 +23,11 @@ public:
     cv::Mat getImgSkeleton() const;
     cv::Mat getImgSkeletonInverted() const;
 
+
 private:
+    QVector<cv::Mat1b> binaryImages;
+    QVector<cv::Mat1b> skeletons;
+
 
     cv::Mat1b imgSkeleton;
     cv::Mat1b imgSkeletonInverted;
@@ -40,6 +45,16 @@ private:
     cv::Mat invertColor(const cv::Mat &img);
 
     cv::Mat thinningGuoHallIteration(cv::Mat imgThin, int iter);
+
+public slots:
+     void thinSubBatch(QVector<int> indexes);
+
+signals:
+    void thinningSubBatchDoneSignal();
+    void beginThinningSignal(QVector<int> indexes);
+
+
+
 };
 
 #endif // THINNING_H

@@ -19,6 +19,7 @@
 #include "contrastbatch.h"
 #include "maskbatch.h"
 #include "binarizationbatch.h"
+#include "thinningmultithread.h"
 
 typedef struct preprocessing_all_results {
     cv::Mat imgOriginal;
@@ -101,6 +102,7 @@ private:
     GaborFilterGPU gaborGPU;
     Binarization binarization;
     Thinning thinning;
+    ThinningMultithread thinningMultiThread;
     Mask mask;
     FrequencyMap fMap;
 
@@ -156,6 +158,7 @@ private:
 
 private slots:
     void allGaborThreadsFinished();
+    void allThinningThreadsFinished();
 
 signals:
     void preprocessingDoneSignal(PREPROCESSING_ALL_RESULTS results);
