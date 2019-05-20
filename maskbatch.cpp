@@ -4,8 +4,8 @@ using namespace af;
 
 maskBatch::maskBatch()
 {
-    this->blockSize=16;
-    this->threshold=200;
+    this->blockSize=13;
+    this->threshold=120;
 }
 
 void maskBatch::setSegmentParams(int blockSize, int threshold){

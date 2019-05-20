@@ -2,8 +2,8 @@
 
 binarizationBatch::binarizationBatch()
 {
-    this->constant=1;
-    this->windowsize=10;
+    this->constant=5;
+    this->windowsize=11;
 }
 
 void binarizationBatch::setParams(int windowsize, int constant){
