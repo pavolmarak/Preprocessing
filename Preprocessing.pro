@@ -23,7 +23,8 @@ SOURCES += preprocessing.cpp \
     preprocessing_caffenetwork.cpp \
     contrastbatch.cpp \
     maskbatch.cpp \
-    binarizationbatch.cpp
+    binarizationbatch.cpp \
+    thinningmultithread.cpp
 
 HEADERS += preprocessing.h\
         preprocessing_global.h \
@@ -43,7 +44,8 @@ HEADERS += preprocessing.h\
     preprocessing_caffenetwork.h \
     contrastbatch.h \
     maskbatch.h \
-    binarizationbatch.h
+    binarizationbatch.h \
+    thinningmultithread.h
 
 unix {
     target.path = /usr/lib

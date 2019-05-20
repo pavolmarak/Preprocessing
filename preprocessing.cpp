@@ -84,6 +84,7 @@ Preprocessing::Preprocessing()
 
     //CONNECTS
     connect(&this->gaborMultiThread, SIGNAL(gaborThreadsFinished()), this, SLOT(allGaborThreadsFinished()));
+    connect(&this->thinningMultiThread,SIGNAL(thinningMultithreadDone()),this,SLOT(allThinningThreadsFinished()));
 }
 
 int Preprocessing::setFrequencyMapParams(CAFFE_FILES freqFiles, int blockSize, int exBlockSize)
@@ -662,7 +663,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     this->durations.binarization=this->timer.elapsed();
     this->batchAllResults.binary=Helper::Array_2_QVectorMat(data,false);
 
-    //thinning -- TODO - paralelize by threads
+    //thinning -- sequence proccess
     QVector<cv::Mat> skeletons (this->batchAllResults.binary.size());
     this->timer.start();
     for(int i=0;i<this->batchAllResults.binary.size();i++){
@@ -672,8 +673,31 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     this->durations.thinning=this->timer.elapsed();
     this->batchAllResults.skeleton = skeletons;
 
+    this->thinningMultiThread.setParams(this->batchAllResults.binary);
+    this->timer.start();
+    this->thinningMultiThread.thin();
 
     //apply mask
+//    data=Helper::QVectorMat_2_Array(this->batchAllResults.skeleton,false);
+//    af::array mask=Helper::QVectorMat_2_Array(this->batchAllResults.mask,false);
+//    mask=this->mask_batch.invertMask(mask);
+//    data=(data+mask).as(u8);
+//    this->batchAllResults.skeleton=Helper::Array_2_QVectorMat(data,false);
+
+//    qDebug() << "Preprocessing done";
+//    emit preprocessingBatchDoneSignal(this->batchAllResults);
+//    emit preprocessingDurationSignal(this->durations);
+
+//    this->cleanResults();
+//    this->cleanDurations();
+//    this->preprocessingIsRunning=false;
+
+}
+
+void Preprocessing::allThinningThreadsFinished(){
+    this->durations.thinning=this->timer.elapsed();
+    this->batchAllResults.skeleton=this->thinningMultiThread.getSkeletons;
+
     data=Helper::QVectorMat_2_Array(this->batchAllResults.skeleton,false);
     af::array mask=Helper::QVectorMat_2_Array(this->batchAllResults.mask,false);
     mask=this->mask_batch.invertMask(mask);
@@ -687,5 +711,4 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     this->cleanResults();
     this->cleanDurations();
     this->preprocessingIsRunning=false;
-
 }
