@@ -189,6 +189,7 @@ cv::Mat Thinning::getImgSkeletonInverted() const
 }
 
 void Thinning::thinSubBatch(QVector<int> indexes){
+    qDebug() << "thinning on subBatch ["<<indexes.first()<<"-"<<indexes.last()<<"] began";
     for(int i : indexes){
         this->thinGuoHallFast(this->binaryImages[i],false);
         this->skeletons[i]=this->getImgSkeleton();
