@@ -10,10 +10,10 @@ class ThinningMultithread : public QObject
     Q_OBJECT
 public:
     explicit ThinningMultithread(QObject *parent = nullptr);
-    void setParams(QVector<cv::Mat1b> binaryImages);
+    void setParams(QVector<cv::Mat>& binaryImages);
     void thin();
 
-    QVector<cv::Mat1b> getSkeletons;
+    QVector<cv::Mat> getSkeletons();
 private:
     int threadsFinished;
     QVector<QThread*> threads;

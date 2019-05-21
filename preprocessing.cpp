@@ -657,22 +657,29 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
     }
 
     //Binarization
+    try{
     data=Helper::QVectorMat_2_Array(this->batchAllResults.Gabor,false);
     this->timer.start();
     data=this->binary_batch.start(data);
     this->durations.binarization=this->timer.elapsed();
     this->batchAllResults.binary=Helper::Array_2_QVectorMat(data,false);
-
-    //thinning -- sequence proccess
-    QVector<cv::Mat> skeletons (this->batchAllResults.binary.size());
-    this->timer.start();
-    for(int i=0;i<this->batchAllResults.binary.size();i++){
-            this->thinning.thinGuoHallFast(this->batchAllResults.binary[i],false);
-            skeletons[i] = this->thinning.getImgSkeleton();
+    }catch(af::exception e){
+        qDebug() << "Error in Binarization" << e.what();
+        this->cleanResults();
+        emit preprocessingErrorSignal(30);
+        return;
     }
-    this->durations.thinning=this->timer.elapsed();
-    this->batchAllResults.skeleton = skeletons;
+    //thinning -- sequence proccess
+//    QVector<cv::Mat> skeletons (this->batchAllResults.binary.size());
+//    this->timer.start();
+//    for(int i=0;i<this->batchAllResults.binary.size();i++){
+//            this->thinning.thinGuoHallFast(this->batchAllResults.binary[i],false);
+//            skeletons[i] = this->thinning.getImgSkeleton();
+//    }
+//    this->durations.thinning=this->timer.elapsed();
+//    this->batchAllResults.skeleton = skeletons;
 
+    //paralel thinning
     this->thinningMultiThread.setParams(this->batchAllResults.binary);
     this->timer.start();
     this->thinningMultiThread.thin();
@@ -696,14 +703,21 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
 
 void Preprocessing::allThinningThreadsFinished(){
     this->durations.thinning=this->timer.elapsed();
-    this->batchAllResults.skeleton=this->thinningMultiThread.getSkeletons;
+    this->batchAllResults.skeleton=this->thinningMultiThread.getSkeletons();
+    qDebug() << "skeleton size : "<< this->batchAllResults.skeleton.size();
 
-    data=Helper::QVectorMat_2_Array(this->batchAllResults.skeleton,false);
+    try{
+    af::array data=Helper::QVectorMat_2_Array(this->batchAllResults.skeleton,false);
     af::array mask=Helper::QVectorMat_2_Array(this->batchAllResults.mask,false);
     mask=this->mask_batch.invertMask(mask);
     data=(data+mask).as(u8);
     this->batchAllResults.skeleton=Helper::Array_2_QVectorMat(data,false);
-
+    }catch(af::exception e){
+        qDebug() << "Error in applying Mask" << e.what();
+        this->cleanResults();
+        emit preprocessingErrorSignal(30);
+        return;
+    }
     qDebug() << "Preprocessing done";
     emit preprocessingBatchDoneSignal(this->batchAllResults);
     emit preprocessingDurationSignal(this->durations);

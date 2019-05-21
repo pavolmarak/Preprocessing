@@ -5,13 +5,20 @@ ThinningMultithread::ThinningMultithread(QObject *parent) : QObject(parent)
 
 }
 
-void ThinningMultithread::setParams(QVector<cv::Mat1b> binaryImages){
-    this->binaryImages=binaryImages;
+void ThinningMultithread::setParams(QVector<cv::Mat> &binaryImages){
+//    this->binaryImages=binaryImages;
+    for(cv::Mat m : binaryImages){
+        this->binaryImages.push_back((cv::Mat1b)m);
+    }
 }
 
 
-QVector<cv::Mat1b> ThinningMultithread::getSkeletons(){
-    return this->skeletons;
+QVector<cv::Mat> ThinningMultithread::getSkeletons(){
+    QVector<cv::Mat> vector;
+    for(cv::Mat m : this->skeletons){
+        vector.push_back((cv::Mat)m);
+    }
+    return vector;
 }
 
 void ThinningMultithread::oneThinningThreadDone(){
