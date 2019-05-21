@@ -5,9 +5,8 @@ Thinning::Thinning(QObject *parent) : QObject(parent)
 
 }
 
-Thinning::Thinning(QVector<cv::Mat1b> binaryImages){
+Thinning::Thinning(QVector<cv::Mat> binaryImages){
     this->binaryImages=binaryImages;
-    this->skeletons=QVector<cv::Mat1b>(binaryImages.size());
 }
 
 static inline bool need_set_guo_hall(uchar*  skeldata, int iter, int col, int row, int cols)
@@ -188,11 +187,14 @@ cv::Mat Thinning::getImgSkeletonInverted() const
     return imgSkeletonInverted;
 }
 
-void Thinning::thinSubBatch(QVector<int> indexes){
-    qDebug() << "thinning on subBatch ["<<indexes.first()<<"-"<<indexes.last()<<"] began";
+
+
+void Thinning::thinSubBatch(QVector<int> indexes, QVector<cv::Mat> &skeletons){
+
     for(int i : indexes){
         this->thinGuoHallFast(this->binaryImages[i],false);
-        this->skeletons[i]=this->getImgSkeleton();
+        skeletons[i]=this->getImgSkeleton();
+
     }
     emit thinningSubBatchDoneSignal();
 }

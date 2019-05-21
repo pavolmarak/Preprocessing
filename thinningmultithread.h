@@ -18,9 +18,9 @@ private:
     int threadsFinished;
     QVector<QThread*> threads;
     //Input
-    QVector<cv::Mat1b> binaryImages;
+    QVector<cv::Mat> binaryImages;
     //Output
-    QVector<cv::Mat1b> skeletons;
+    QVector<cv::Mat> skeletons;
 signals:
     void thinningMultithreadDone();
 public slots:

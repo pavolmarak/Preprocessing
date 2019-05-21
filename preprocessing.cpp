@@ -603,7 +603,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
         this->preprocessingError(30);
         return;
     }
-
+     af::deviceGC();//garbageCollector
     //segmentation
     try{
         af::timer::start();
@@ -616,7 +616,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
         emit preprocessingErrorSignal(30);
         return;
     }
-
+ af::deviceGC();//garbageCollector
     //OMap
     try{
         data=Helper::QVectorMat_2_Array(this->batchAllResults.original,false);
@@ -634,7 +634,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
         emit preprocessingErrorSignal(30);
         return;
     }
-
+ af::deviceGC();//garbageCollector
 
     //paralel gabor
     try{
@@ -655,7 +655,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
         emit preprocessingErrorSignal(30);
         return;
     }
-
+ af::deviceGC();//garbageCollector
     //Binarization
     try{
     data=Helper::QVectorMat_2_Array(this->batchAllResults.Gabor,false);
@@ -669,42 +669,18 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
         emit preprocessingErrorSignal(30);
         return;
     }
-    //thinning -- sequence proccess
-//    QVector<cv::Mat> skeletons (this->batchAllResults.binary.size());
-//    this->timer.start();
-//    for(int i=0;i<this->batchAllResults.binary.size();i++){
-//            this->thinning.thinGuoHallFast(this->batchAllResults.binary[i],false);
-//            skeletons[i] = this->thinning.getImgSkeleton();
-//    }
-//    this->durations.thinning=this->timer.elapsed();
-//    this->batchAllResults.skeleton = skeletons;
+  af::deviceGC();//garbageCollector
 
     //paralel thinning
     this->thinningMultiThread.setParams(this->batchAllResults.binary);
     this->timer.start();
     this->thinningMultiThread.thin();
-
-    //apply mask
-//    data=Helper::QVectorMat_2_Array(this->batchAllResults.skeleton,false);
-//    af::array mask=Helper::QVectorMat_2_Array(this->batchAllResults.mask,false);
-//    mask=this->mask_batch.invertMask(mask);
-//    data=(data+mask).as(u8);
-//    this->batchAllResults.skeleton=Helper::Array_2_QVectorMat(data,false);
-
-//    qDebug() << "Preprocessing done";
-//    emit preprocessingBatchDoneSignal(this->batchAllResults);
-//    emit preprocessingDurationSignal(this->durations);
-
-//    this->cleanResults();
-//    this->cleanDurations();
-//    this->preprocessingIsRunning=false;
-
 }
 
 void Preprocessing::allThinningThreadsFinished(){
     this->durations.thinning=this->timer.elapsed();
     this->batchAllResults.skeleton=this->thinningMultiThread.getSkeletons();
-    qDebug() << "skeleton size : "<< this->batchAllResults.skeleton.size();
+
 
     try{
     af::array data=Helper::QVectorMat_2_Array(this->batchAllResults.skeleton,false);
@@ -718,7 +694,8 @@ void Preprocessing::allThinningThreadsFinished(){
         emit preprocessingErrorSignal(30);
         return;
     }
-    qDebug() << "Preprocessing done";
+     af::deviceGC();//garbageCollector
+
     emit preprocessingBatchDoneSignal(this->batchAllResults);
     emit preprocessingDurationSignal(this->durations);
 
