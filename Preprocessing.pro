@@ -52,21 +52,4 @@ unix {
     INSTALLS += target
 }
 
-#CUDA
-#unix:!macx: LIBS += -L/opt/cuda/lib/ -lcudart
-#INCLUDEPATH += /opt/cuda/include
-#DEPENDPATH += /opt/cuda/include
 
-#ArrayFire
-#unix:!macx: LIBS += -L/usr/lib/ -lafcpu
-#INCLUDEPATH += /usr/include
-#DEPENDPATH += /usr/include
-
-#OpenCV
-#unix:!macx: LIBS += -L/usr/lib/ -lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc
-#INCLUDEPATH += /usr/include/opencv4
-
-#caffe
-#unix:!macx: LIBS += -L$$PWD/../../../../usr/lib/ -lcaffe
-#INCLUDEPATH += $$PWD/../../../../usr/include/caffe
-#DEPENDPATH += $$PWD/../../../../usr/include/caffe
