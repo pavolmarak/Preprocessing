@@ -58,7 +58,7 @@ INCLUDEPATH += /opt/cuda/include
 DEPENDPATH += /opt/cuda/include
 
 #ArrayFire
-unix:!macx: LIBS += -L/usr/lib/ -lafcuda
+unix:!macx: LIBS += -L/usr/lib/ -lafcpu
 INCLUDEPATH += /usr/include
 DEPENDPATH += /usr/include
 

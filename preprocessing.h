@@ -63,6 +63,7 @@ typedef struct preprocessing_durations {
     int frequencyMap;
 } PREPROCESSING_DURATIONS;
 
+#ifndef BATCH_RESULTS_DEFINED
 typedef struct batchPreprocessingResults{
     QVector<cv::Mat> original;
     QVector<cv::Mat> enhanced;
@@ -72,6 +73,8 @@ typedef struct batchPreprocessingResults{
     QVector<cv::Mat> binary;
     QVector<cv::Mat> skeleton;
 } BATCH_RESULTS;
+#define BATCH_RESULTS_DEFINED
+#endif
 
 class PREPROCESSINGSHARED_EXPORT Preprocessing : public QObject
 {

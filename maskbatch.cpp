@@ -4,7 +4,7 @@ using namespace af;
 
 maskBatch::maskBatch()
 {
-    this->blockSize=10;
+    this->blockSize=17;
     this->threshold=130;
 }
 

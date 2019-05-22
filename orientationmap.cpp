@@ -268,3 +268,9 @@ af::array OrientationMap::computeAdvancedMapBatch(af::array imgOriginal, OMAP_PA
     imgOriginal=Helper::Array2D_2_Array3D(this->getOMapAF_advanced(),height);
     return imgOriginal;
 }
+void OrientationMap::clear(){
+    this->imgInputAF=af::constant(0,0);
+    this->oMapAF_basic=af::constant(0,0);
+    this->oMapAF_advanced=af::constant(0,0);
+}
+

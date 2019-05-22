@@ -5,8 +5,8 @@ using namespace af;
 
 contrastBatch::contrastBatch()
 {
-    this->chromaticSigma=60.0F;
-    this->spatialSigma=2.0F;
+    this->chromaticSigma=80.0F;
+    this->spatialSigma=3.0F;
 }
 
 

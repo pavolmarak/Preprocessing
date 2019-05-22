@@ -336,6 +336,7 @@ void Preprocessing::start()
                     QVector<cv::Mat> image (1);
                     image[0]=this->inputParams.imgOriginal;
                     this->startBatchProcess(image);
+                    return;
                 }
                 else
                     this->startBatchProcess(this->inputParams.imgOriginals);
@@ -634,6 +635,7 @@ void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
         emit preprocessingErrorSignal(30);
         return;
     }
+ this->oMap.clear();
  af::deviceGC();//garbageCollector
 
     //paralel gabor

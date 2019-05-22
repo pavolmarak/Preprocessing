@@ -20,7 +20,7 @@ public:
     //batch function
     af::array computeBasicMapBatch(af::array imgOriginal,OMAP_PARAMS omap);
     af::array computeAdvancedMapBatch(af::array imgOriginal,OMAP_PARAMS omap);
-
+    void clear();
 
 
 
