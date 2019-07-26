@@ -85,9 +85,9 @@ void GaborFilterGPU::enhanceWithBasicOMap()
     Helper::array_uchar2mat_uchar(output).copyTo(this->imgEnhanced(cv::Rect(paddingWidth/2, paddingHeight/2, cutWidth, cutHeight)));
 
     // Resize the orientation map to the original size
-    cv::Mat oMapCV(origHeight, origWidth, CV_32FC1);
-    this->gabor.oMap->copyTo(oMapCV(cv::Rect(paddingWidth/2, paddingHeight/2, cutWidth, cutHeight)));
-    *this->gabor.oMap = oMapCV.clone();
+   // cv::Mat oMapCV(origHeight, origWidth, CV_32FC1);
+   // this->gabor.oMap->copyTo(oMapCV(cv::Rect(paddingWidth/2, paddingHeight/2, cutWidth, cutHeight)));
+   // *this->gabor.oMap = oMapCV.clone();
 
     this->duration = af::timer::stop() * 1000; // s to ms
 }
@@ -117,7 +117,7 @@ void GaborFilterGPU::enhanceWithAdvancedOMap(){
     gfor(af::seq i, this->oMap.elements()){
         kernels(af::span, af::span, i) = this->getGaborKernel(this->oMap(i));
     }
-
+    af::deviceGC();
     kernels = af::moddims(kernels, this->imgInput.dims(0), this->imgInput.dims(1), this->imgInput.dims(2));
 
     af::array output = kernels * this->imgInput;
@@ -128,11 +128,11 @@ void GaborFilterGPU::enhanceWithAdvancedOMap(){
     Helper::af_normalizeImage(output);
     this->imgEnhanced = cv::Mat(origHeight, origWidth, CV_8UC1);
     Helper::array_uchar2mat_uchar(output).copyTo(this->imgEnhanced(cv::Rect(paddingWidth/2, paddingHeight/2, cutWidth, cutHeight)));
-
+    af::deviceGC();
     // Resize the orientation map to the original size
-    cv::Mat oMapCV(origHeight, origWidth, CV_32FC1);
-    this->gabor.oMap->copyTo(oMapCV(cv::Rect(paddingWidth/2, paddingHeight/2, cutWidth, cutHeight)));
-    *this->gabor.oMap = oMapCV.clone();
+    //cv::Mat oMapCV(origHeight, origWidth, CV_32FC1);
+    //this->gabor.oMap->copyTo(oMapCV(cv::Rect(paddingWidth/2, paddingHeight/2, cutWidth, cutHeight)));
+    //*this->gabor.oMap = oMapCV.clone();
 
     this->duration = af::timer::stop() * 1000; // s to ms
 }

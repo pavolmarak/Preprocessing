@@ -20,7 +20,11 @@ SOURCES += preprocessing.cpp \
     mask.cpp \
     qualitymap.cpp \
     gaborfiltergpu.cpp \
-    preprocessing_caffenetwork.cpp
+    preprocessing_caffenetwork.cpp \
+    contrastbatch.cpp \
+    maskbatch.cpp \
+    binarizationbatch.cpp \
+    thinningmultithread.cpp
 
 HEADERS += preprocessing.h\
         preprocessing_global.h \
@@ -37,22 +41,15 @@ HEADERS += preprocessing.h\
     qualitymap.h \
     gaborfiltergpu.h \
     preprocessing_config.h \
-    preprocessing_caffenetwork.h
+    preprocessing_caffenetwork.h \
+    contrastbatch.h \
+    maskbatch.h \
+    binarizationbatch.h \
+    thinningmultithread.h
 
 unix {
     target.path = /usr/lib
     INSTALLS += target
 }
 
-#CUDA
-unix:!macx: LIBS += -L/opt/cuda/lib64/ -lcudart
-INCLUDEPATH += /opt/cuda/include
-DEPENDPATH += /opt/cuda/include
 
-#ArrayFire
-unix:!macx: LIBS += -L/usr/lib64/ -lafcuda
-INCLUDEPATH += /usr/include
-DEPENDPATH += /usr/include
-
-#OpenCV
-INCLUDEPATH += /usr/include/opencv4

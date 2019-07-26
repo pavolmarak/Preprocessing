@@ -109,6 +109,49 @@ public:
     static inline QByteArray QStringToQByteArray(const QString &x) {
         return x.toUtf8();
     }
-};
 
+
+    static inline af::array Array3D_2_Array2D(const af::array& array){
+        af::array batch;
+        for(int i=0;i<array.dims(2);i++){
+            batch=af::join(0,batch,array(af::span,af::span,i));
+        }
+        return batch;
+    }
+
+
+    static inline af::array Array2D_2_Array3D(const af::array& batch,int originalHeight){
+        af::array array;
+        for(int i=0;i<batch.dims(0)/originalHeight;i++){
+            array=join(2,array,batch((af::seq((i*originalHeight),(i*originalHeight+originalHeight-1))),af::span));
+        }
+        return array;
+    }
+
+
+    static inline af::array QVectorMat_2_Array(const QVector<cv::Mat>& MatImages, bool isFloat){
+        int count=MatImages.size();
+        af::array Batch(MatImages.last().rows,MatImages.last().cols,count);
+        for (int i=0;i<count;i++) {
+            if(isFloat)
+            Batch(af::span,af::span,i)=Helper::mat_float2array_float(MatImages[i]);
+            else
+            Batch(af::span,af::span,i)=Helper::mat_uchar2array_uchar(MatImages[i]);
+        }
+        return Batch;
+    }
+
+    static inline QVector<cv::Mat> Array_2_QVectorMat(const af::array& batch, bool isFloat){
+        QVector<cv::Mat> data;
+        for(int i=0;i<batch.dims(2);i++)
+        {
+            if(isFloat)
+                data.push_back(Helper::array_float2mat_float(batch(af::span,af::span,i)));
+            else
+                data.push_back(Helper::array_uchar2mat_uchar(batch(af::span,af::span,i)));
+        }
+        return data;
+    }
+
+};
 #endif // HELPER_H

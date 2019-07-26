@@ -1,5 +1,8 @@
 ﻿#include "preprocessing.h"
 
+#include <QDebug>
+
+
 Preprocessing::Preprocessing()
 {  
     this->preprocessingIsRunning = false;
@@ -81,6 +84,7 @@ Preprocessing::Preprocessing()
 
     //CONNECTS
     connect(&this->gaborMultiThread, SIGNAL(gaborThreadsFinished()), this, SLOT(allGaborThreadsFinished()));
+    connect(&this->thinningMultiThread,SIGNAL(thinningMultithreadDone()),this,SLOT(allThinningThreadsFinished()));
 }
 
 int Preprocessing::setFrequencyMapParams(CAFFE_FILES freqFiles, int blockSize, int exBlockSize)
@@ -200,6 +204,14 @@ void Preprocessing::cleanResults()
     this->results.orientationMap.release();
     this->results.qualityMap.release();
 
+    this->batchAllResults.original.clear();
+    this->batchAllResults.enhanced.clear();
+    this->batchAllResults.mask.clear();
+    this->batchAllResults.Gabor.clear();
+    this->batchAllResults.binary.clear();
+    this->batchAllResults.skeleton.clear();
+
+
     this->resultsMap.clear();
     this->allResultsMap.clear();
 }
@@ -305,6 +317,7 @@ int Preprocessing::loadInput(QString inputPath)
     return 1;
 }
 
+
 // PREPROCESSING START
 
 void Preprocessing::start()
@@ -316,6 +329,20 @@ void Preprocessing::start()
             this->cleanDurations();
 
             this->preprocessingIsRunning = true;
+
+            //if batchmode ON -> start BatchPreprocessing
+            if(this->BatchMode){
+                if(this->inputParams.mode == image|| this->inputParams.mode == imagePath){
+                    QVector<cv::Mat> image (1);
+                    image[0]=this->inputParams.imgOriginal;
+                    this->startBatchProcess(image);
+                    return;
+                }
+                else
+                    this->startBatchProcess(this->inputParams.imgOriginals);
+                return;
+            }
+
             if (this->inputParams.mode == image || this->inputParams.mode == imagePath) {
                 this->results.imgOriginal = this->inputParams.imgOriginal;
                 this->startProcess(this->inputParams.imgOriginal);
@@ -538,4 +565,143 @@ void Preprocessing::preprocessingError(int errorcode)
      */
 
     emit preprocessingErrorSignal(errorcode);
+}
+
+void Preprocessing::setBatchModeON(bool value){
+    this->BatchMode=value;
+}
+
+
+void Preprocessing::startBatchProcess(QVector<cv::Mat> imgOriginal){
+    //shrink input to fitting size
+    af::array data=Helper::QVectorMat_2_Array(imgOriginal,false);
+    try{
+        af::array shrinked((data.dims(0)/this->omapParams.blockSize)*this->omapParams.blockSize,(data.dims(1)/this->omapParams.blockSize)*this->omapParams.blockSize,data.dims(2));
+        for(int i=0;i<data.dims(2);i++){
+                shrinked(af::span,af::span,i)=data(af::seq(shrinked.dims(0)),af::seq(shrinked.dims(1)),i);
+        }
+        this->batchAllResults.original=Helper::Array_2_QVectorMat(shrinked,false);
+    }catch(af::exception e){
+        qDebug() << "error during shrinking : " << e.what() << "\nAborting!";
+        emit preprocessingErrorSignal(30);
+        return;
+    }
+    af::deviceGC();//garbageCollector
+
+
+
+    //contrast enhancement
+    try{
+        data=Helper::QVectorMat_2_Array(this->batchAllResults.original,false);
+        af::timer::start();
+        data=this->contrast_batch.start(data);
+        this->durations.contrastEnhancement=af::timer::stop() * 1000;
+        this->batchAllResults.enhanced = Helper::Array_2_QVectorMat(data,false);
+    }
+    catch(af::exception e){
+        qDebug() << "af exception in contrast enhancement : " << e.what() <<"\nAborting";
+        this->cleanResults();
+        this->preprocessingError(30);
+        return;
+    }
+     af::deviceGC();//garbageCollector
+    //segmentation
+    try{
+        af::timer::start();
+        data = this->mask_batch.start(data);
+        this->durations.mask=af::timer::stop() * 1000;
+        this->batchAllResults.mask=Helper::Array_2_QVectorMat(data,false);
+    }catch(af::exception e){
+        qDebug() << "af exception in segmentation : " << e.what() <<"\nAborting";
+        this->cleanResults();
+        emit preprocessingErrorSignal(30);
+        return;
+    }
+ af::deviceGC();//garbageCollector
+    //OMap
+    try{
+        data=Helper::QVectorMat_2_Array(this->batchAllResults.original,false);
+        if(this->features.useAdvancedOrientationMap){
+            data = this->oMap.computeAdvancedMapBatch(data,this->omapParams);
+        }
+        else{
+            data=this->oMap.computeBasicMapBatch(data,this->omapParams);
+        }
+        this->batchAllResults.oMap=Helper::Array_2_QVectorMat(data,true);
+        this->durations.orientationMap=this->oMap.getDuration();
+    }catch(af::exception e){
+        qDebug() << "af exception in oMap : " << e.what();
+        this->cleanResults();
+        emit preprocessingErrorSignal(30);
+        return;
+    }
+ this->oMap.clear();
+ af::deviceGC();//garbageCollector
+
+    //paralel gabor
+    try{
+        data=Helper::Array3D_2_Array2D(Helper::QVectorMat_2_Array(this->batchAllResults.enhanced,false));//enhanced images to 2d array
+        this->orientationMapAF=Helper::Array3D_2_Array2D(Helper::QVectorMat_2_Array(this->batchAllResults.oMap,true));//orientation mat to 2d array
+        this->gaborGPU.setParams(Helper::array_uchar2mat_uchar(data),this->gaborParams);
+
+        if(this->features.useAdvancedOrientationMap) this->gaborGPU.enhanceWithAdvancedOMap();
+        else this->gaborGPU.enhanceWithBasicOMap();
+
+        this->durations.gaborFilter = this->gaborGPU.getDuration();        
+        data=Helper::mat_uchar2array_uchar(this->gaborGPU.getImgEnhanced());
+        data=Helper::Array2D_2_Array3D(data.as(f32),this->batchAllResults.enhanced[0].rows);
+        this->batchAllResults.Gabor=Helper::Array_2_QVectorMat(data,false);
+    }catch(af::exception e){
+        qDebug() << "Error in Gabor filter" << e.what();
+        this->cleanResults();
+        emit preprocessingErrorSignal(30);
+        return;
+    }
+ af::deviceGC();//garbageCollector
+    //Binarization
+    try{
+    data=Helper::QVectorMat_2_Array(this->batchAllResults.Gabor,false);
+    this->timer.start();
+    data=this->binary_batch.start(data);
+    this->durations.binarization=this->timer.elapsed();
+    this->batchAllResults.binary=Helper::Array_2_QVectorMat(data,false);
+    }catch(af::exception e){
+        qDebug() << "Error in Binarization" << e.what();
+        this->cleanResults();
+        emit preprocessingErrorSignal(30);
+        return;
+    }
+  af::deviceGC();//garbageCollector
+
+    //paralel thinning
+    this->thinningMultiThread.setParams(this->batchAllResults.binary);
+    this->timer.start();
+    this->thinningMultiThread.thin();
+}
+
+void Preprocessing::allThinningThreadsFinished(){
+    this->durations.thinning=this->timer.elapsed();
+    this->batchAllResults.skeleton=this->thinningMultiThread.getSkeletons();
+
+
+    try{
+    af::array data=Helper::QVectorMat_2_Array(this->batchAllResults.skeleton,false);
+    af::array mask=Helper::QVectorMat_2_Array(this->batchAllResults.mask,false);
+    mask=this->mask_batch.invertMask(mask);
+    data=(data+mask).as(u8);
+    this->batchAllResults.skeleton=Helper::Array_2_QVectorMat(data,false);
+    }catch(af::exception e){
+        qDebug() << "Error in applying Mask" << e.what();
+        this->cleanResults();
+        emit preprocessingErrorSignal(30);
+        return;
+    }
+     af::deviceGC();//garbageCollector
+
+    emit preprocessingBatchDoneSignal(this->batchAllResults);
+    emit preprocessingDurationSignal(this->durations);
+
+    this->cleanResults();
+    this->cleanDurations();
+    this->preprocessingIsRunning=false;
 }

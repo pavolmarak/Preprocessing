@@ -1,4 +1,5 @@
 #include "orientationmap.h"
+#include <QDebug>
 
 OrientationMap::OrientationMap(QObject *parent) : QObject(parent)
 {
@@ -217,6 +218,7 @@ void OrientationMap::drawBasicMap(const cv::Mat &imgOriginal)
     }
 }
 
+
 cv::Mat OrientationMap::getImgOMap_basic() const
 {
     return imgOMap_basic;
@@ -246,3 +248,29 @@ float OrientationMap::getDuration() const
 {
     return duration;
 }
+
+//----------------------wrappers for batch processing-----------------------------
+af::array OrientationMap::computeBasicMapBatch(af::array imgOriginal,OMAP_PARAMS omap){
+    int height = imgOriginal.dims(0);
+    imgOriginal=Helper::Array3D_2_Array2D(imgOriginal);
+    this->setParams(Helper::array_uchar2mat_uchar(imgOriginal),omap);
+    this->computeBasicMapGPU();
+    imgOriginal=this->getOMapAF_basic();
+    imgOriginal=Helper::Array2D_2_Array3D(imgOriginal,height/this->omap.blockSize);
+    return imgOriginal;
+}
+
+af::array OrientationMap::computeAdvancedMapBatch(af::array imgOriginal, OMAP_PARAMS omap){
+    int height = imgOriginal.dims(0);
+    imgOriginal=Helper::Array3D_2_Array2D(imgOriginal);
+    this->setParams(Helper::array_uchar2mat_uchar(imgOriginal),omap);
+    this->computeAdvancedMapGPU();
+    imgOriginal=Helper::Array2D_2_Array3D(this->getOMapAF_advanced(),height);
+    return imgOriginal;
+}
+void OrientationMap::clear(){
+    this->imgInputAF=af::constant(0,0);
+    this->oMapAF_basic=af::constant(0,0);
+    this->oMapAF_advanced=af::constant(0,0);
+}
+

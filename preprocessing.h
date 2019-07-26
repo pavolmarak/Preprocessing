@@ -15,6 +15,12 @@
 #include "mask.h"
 #include "qualitymap.h"
 
+//batch mode
+#include "contrastbatch.h"
+#include "maskbatch.h"
+#include "binarizationbatch.h"
+#include "thinningmultithread.h"
+
 typedef struct preprocessing_all_results {
     cv::Mat imgOriginal;
     cv::Mat imgContrastEnhanced;
@@ -30,6 +36,8 @@ typedef struct preprocessing_all_results {
     cv::Mat orientationMap;
     cv::Mat qualityMap;
 } PREPROCESSING_ALL_RESULTS;
+
+
 
 #ifndef PREPROCESSING_RESULTS_DEFINED
 typedef struct preprocessing_results {
@@ -55,6 +63,19 @@ typedef struct preprocessing_durations {
     int frequencyMap;
 } PREPROCESSING_DURATIONS;
 
+#ifndef BATCH_RESULTS_DEFINED
+typedef struct batchPreprocessingResults{
+    QVector<cv::Mat> original;
+    QVector<cv::Mat> enhanced;
+    QVector<cv::Mat> mask;
+    QVector<cv::Mat> oMap;
+    QVector<cv::Mat> Gabor;
+    QVector<cv::Mat> binary;
+    QVector<cv::Mat> skeleton;
+} BATCH_RESULTS;
+#define BATCH_RESULTS_DEFINED
+#endif
+
 class PREPROCESSINGSHARED_EXPORT Preprocessing : public QObject
 {
     Q_OBJECT
@@ -72,8 +93,11 @@ public:
     int setFrequencyMapParams(CAFFE_FILES freqFiles, int blockSize, int exBlockSize);
     int setMaskParams(CAFFE_FILES maskFiles, int blockSize, int exBlockSize, bool useSmooth);
     int setCPUOnly(bool enabled, int threadNum = 0);
+    void setBatchModeON(bool value);
+
 
 private:
+
     ContrastEnhancement contrast;
     OrientationMap oMap;
     QualityMap qMap;
@@ -81,8 +105,18 @@ private:
     GaborFilterGPU gaborGPU;
     Binarization binarization;
     Thinning thinning;
+    ThinningMultithread thinningMultiThread;
     Mask mask;
     FrequencyMap fMap;
+
+    //batch mode classes:
+    contrastBatch contrast_batch;
+    maskBatch mask_batch;
+    binarizationBatch binary_batch;
+    //----------------------------------------------------------------------------------
+    bool BatchMode;//defines if batch mode is on(true), or off (false)
+
+
 
     QTime timer;
 
@@ -109,6 +143,8 @@ private:
     QMap<QString, PREPROCESSING_RESULTS> resultsMap;
     QMap<QString, PREPROCESSING_ALL_RESULTS> allResultsMap;
 
+    BATCH_RESULTS batchAllResults;
+
     PREPROCESSING_DURATIONS durations;
 
     // PRIVATE FUNCTIONS
@@ -118,9 +154,14 @@ private:
     void cleanInput();
     void cleanDurations();
     void startProcess(const cv::Mat &imgOriginal);
+    //batch mode
+    void startBatchProcess(QVector<cv::Mat> imgOriginal);
+    af::array createBatch(QVector<cv::Mat> MatImages,bool isFloat); // create af::array Batch fort Batch mode
+    QVector<cv::Mat> decomposeBatch(af::array batch,bool isFloat); // turn af::array Batch to QVector for storing
 
 private slots:
     void allGaborThreadsFinished();
+    void allThinningThreadsFinished();
 
 signals:
     void preprocessingDoneSignal(PREPROCESSING_ALL_RESULTS results);
@@ -130,6 +171,9 @@ signals:
     void preprocessingSequenceDoneSignal(QMap<QString, PREPROCESSING_RESULTS> results);
 
     void preprocessingDurationSignal(PREPROCESSING_DURATIONS durations);
+
+    void preprocessingBatchDoneSignal(BATCH_RESULTS batchAllResults);
+
     void preprocessingProgressSignal(int progress);
     void preprocessingErrorSignal(int errorcode);
 };

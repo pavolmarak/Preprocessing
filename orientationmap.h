@@ -3,6 +3,7 @@
 
 #include "preprocessing_config.h"
 
+
 class OrientationMap : public QObject
 {
     Q_OBJECT
@@ -16,6 +17,12 @@ public:
     void computeAdvancedMapCPU();
     void computeAdvancedMapGPU();
     void drawBasicMap(const cv::Mat &imgOriginal);
+    //batch function
+    af::array computeBasicMapBatch(af::array imgOriginal,OMAP_PARAMS omap);
+    af::array computeAdvancedMapBatch(af::array imgOriginal,OMAP_PARAMS omap);
+    void clear();
+
+
 
     //getNset
     cv::Mat getOMap_advanced() const;

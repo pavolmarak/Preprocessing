@@ -14,6 +14,7 @@ public:
     void enhanceWithBasicOMap();
     void enhanceWithAdvancedOMap();
 
+
     //getNset
     cv::Mat getImgEnhanced() const;
     float getDuration() const;
