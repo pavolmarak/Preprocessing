@@ -50,9 +50,26 @@ INCLUDEPATH += /opt/cuda/include
 DEPENDPATH += /opt/cuda/include
 
 #ArrayFire
-unix:!macx: LIBS += -L/usr/lib64/ -lafcuda
+unix:!macx: LIBS += -L/usr/local/lib/ -lafcuda
+INCLUDEPATH += /usr/local/include
+DEPENDPATH += /usr/local/include
+
+#OpenCV
+unix:!macx: LIBS += -L/usr/lib/ -lopencv_core
+unix:!macx: LIBS += -L/usr/lib/ -lopencv_imgproc
+unix:!macx: LIBS += -L/usr/lib/ -lopencv_imgcodecs
+unix:!macx: LIBS += -L/usr/lib/ -lopencv_highgui
+INCLUDEPATH += /usr/include/opencv4
+DEPENDPATH += /usr/include/opencv4
+
+#Caffe
+unix:!macx: LIBS += -L/usr/lib/ -lcaffe
 INCLUDEPATH += /usr/include
 DEPENDPATH += /usr/include
 
-#OpenCV
-INCLUDEPATH += /usr/include/opencv4
+#glog, protobuf
+unix:!macx: LIBS += -L/usr/lib/ -lglog
+unix:!macx: LIBS += -L/usr/lib/ -lprotobuf
+unix:!macx: LIBS += -L/usr/lib/ -lboost_system
+INCLUDEPATH += /usr/include
+DEPENDPATH += /usr/include

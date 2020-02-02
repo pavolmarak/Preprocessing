@@ -81,7 +81,7 @@ void OrientationMap::computeBasicMapGPU()
     int paddingY = this->imgInputAF.dims(0) - height * this->omap.blockSize;
 
     // vypocet gradientov x a y
-    af::sobel(Gx, Gy, this->imgInputAF);
+    af::sobel(Gy, Gx, this->imgInputAF,3); // neuveritelna frajerina, po novom musi byt Gx a Gy v opacnom poradi
 
     // vypocet Vx,Vy a Theta
     af::array GxCut = Gx(af::seq(paddingY / 2, height * this->omap.blockSize + paddingY / 2 - 1), af::seq(paddingX / 2, width * this->omap.blockSize+paddingX / 2 - 1));
@@ -95,6 +95,8 @@ void OrientationMap::computeBasicMapGPU()
     this->oMapAF_basic = 0.5* af::atan2(Vx.as(f32), Vy.as(f32));
 
     this->oMapAF_basic = af::moddims(this->oMapAF_basic, height, width);
+
+    this->oMap_basic = Helper::array_float2mat_float(this->oMapAF_basic);
 
     // vyhladenie smerovej mapy
     af::array sinTheta = af::sin(2 * this->oMapAF_basic);

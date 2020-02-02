@@ -45,9 +45,12 @@ public:
 
    static inline af::array mat_uchar2array_uchar(const cv::Mat &input)
    {
+       if(input.type() != CV_8UC1){
+           qDebug() << QString("OpenCV Mat to AF Array: input image is not grayscale.");
+       }
        cv::Mat helperMat;
        cv::transpose(input,helperMat);
-       return af::array(input.rows, input.cols, helperMat.data).as(u8);
+       return af::array (input.rows, input.cols, helperMat.data);
    }
 
     static inline af::array mat_double2array_double(const cv::Mat& mat){

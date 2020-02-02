@@ -382,11 +382,11 @@ void Preprocessing::startProcess(const cv::Mat &imgOriginal)
         this->contrast.enhance();
         this->durations.contrastEnhancement += this->timer.elapsed();
         this->results.imgContrastEnhanced = this->contrast.getImgContrastEnhanced();
-
-        // ORIENTATION MAP
-        //this->oMap.setParams(this->results.imgContrastEnhanced, this->omapParams);
     }
-    /*else */this->oMap.setParams(imgOriginal, this->omapParams);
+    /*else */
+
+     // ORIENTATION MAP
+    this->oMap.setParams(imgOriginal, this->omapParams);
 
     if (this->general.cpuOnly) {
         this->oMap.computeAdvancedMapCPU(); // Gabor Filter in CPU mode works only with advanced orientation map
@@ -413,6 +413,7 @@ void Preprocessing::startProcess(const cv::Mat &imgOriginal)
     if (this->features.advancedMode) {
         this->oMap.drawBasicMap(imgOriginal);
         this->results.imgOrientationMap = this->oMap.getImgOMap_basic();
+
     }
 
     if (!this->general.cpuOnly) {
