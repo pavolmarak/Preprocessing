@@ -185,6 +185,11 @@ int Preprocessing::setCPUOnly(bool enabled, int threadNum)
     return 1;
 }
 
+PREPROCESSING_RESULTS Preprocessing::getBasicResults() const
+{
+    return basicResults;
+}
+
 void Preprocessing::cleanResults()
 {
     this->results.imgBinarized.release();
@@ -324,7 +329,6 @@ void Preprocessing::start()
                 this->results.imgOriginal = this->inputParams.imgOriginals[0];
                 this->startProcess(this->inputParams.imgOriginals[0]);
             }
-
         }
         else this->preprocessingError(20);
     }
@@ -486,7 +490,7 @@ void Preprocessing::continueAfterGabor()
             emit preprocessingDoneSignal(this->results);
         }
         else {
-            PREPROCESSING_RESULTS basicResults = {this->inputParams.imgOriginal, this->results.imgSkeleton, this->results.imgSkeletonInverted,
+            basicResults = {this->inputParams.imgOriginal, this->results.imgSkeleton, this->results.imgSkeletonInverted,
                                                   this->results.qualityMap, this->results.orientationMap};
             emit preprocessingDoneSignal(basicResults);
         }

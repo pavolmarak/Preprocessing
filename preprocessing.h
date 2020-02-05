@@ -73,6 +73,8 @@ public:
     int setMaskParams(CAFFE_FILES maskFiles, int blockSize, int exBlockSize, bool useSmooth);
     int setCPUOnly(bool enabled, int threadNum = 0);
 
+    PREPROCESSING_RESULTS getBasicResults() const;
+
 private:
     ContrastEnhancement contrast;
     OrientationMap oMap;
@@ -105,6 +107,7 @@ private:
 
     // OUTPUT
     af::array orientationMapAF;
+    PREPROCESSING_RESULTS basicResults;
     PREPROCESSING_ALL_RESULTS results;
     QMap<QString, PREPROCESSING_RESULTS> resultsMap;
     QMap<QString, PREPROCESSING_ALL_RESULTS> allResultsMap;
