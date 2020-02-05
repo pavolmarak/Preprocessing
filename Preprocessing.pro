@@ -44,32 +44,75 @@ unix {
     INSTALLS += target
 }
 
-#CUDA
-unix:!macx: LIBS += -L/opt/cuda/lib64/ -lcudart
-INCLUDEPATH += /opt/cuda/include
-DEPENDPATH += /opt/cuda/include
+#-----------------------------------------------------------
 
-#ArrayFire
+#CUDA - Debian
+unix:!macx: LIBS += -L/usr/local/cuda/lib64/ -lcudart
+INCLUDEPATH += /usr/local/cuda/include
+DEPENDPATH += /usr/local/cuda/include
+
+#CUDA - Manjaro
+#unix:!macx: LIBS += -L/opt/cuda/lib64/ -lcudart
+#INCLUDEPATH += /opt/cuda/include
+#DEPENDPATH += /opt/cuda/include
+
+# -----------------------------------------------------------
+
+#ArrayFire - Debian
 unix:!macx: LIBS += -L/usr/local/lib/ -lafcuda
 INCLUDEPATH += /usr/local/include
 DEPENDPATH += /usr/local/include
 
-#OpenCV
-unix:!macx: LIBS += -L/usr/lib/ -lopencv_core
-unix:!macx: LIBS += -L/usr/lib/ -lopencv_imgproc
-unix:!macx: LIBS += -L/usr/lib/ -lopencv_imgcodecs
-unix:!macx: LIBS += -L/usr/lib/ -lopencv_highgui
+#ArrayFire - Manjaro
+#unix:!macx: LIBS += -L/usr/local/lib/ -lafcuda
+#INCLUDEPATH += /usr/local/include
+#DEPENDPATH += /usr/local/include
+
+# -----------------------------------------------------------
+
+#OpenCV - Debian
+unix:!macx: LIBS += -L/usr/lib/x86_64-linux-gnu/ -lopencv_core
+unix:!macx: LIBS += -L/usr/lib/x86_64-linux-gnu/ -lopencv_imgproc
+unix:!macx: LIBS += -L/usr/lib/x86_64-linux-gnu/ -lopencv_imgcodecs
+unix:!macx: LIBS += -L/usr/lib/x86_64-linux-gnu/ -lopencv_highgui
 INCLUDEPATH += /usr/include/opencv4
 DEPENDPATH += /usr/include/opencv4
 
-#Caffe
-unix:!macx: LIBS += -L/usr/lib/ -lcaffe
+#OpenCV - Manjaro
+#unix:!macx: LIBS += -L/usr/lib/ -lopencv_core
+#unix:!macx: LIBS += -L/usr/lib/ -lopencv_imgproc
+#unix:!macx: LIBS += -L/usr/lib/ -lopencv_imgcodecs
+#unix:!macx: LIBS += -L/usr/lib/ -lopencv_highgui
+#INCLUDEPATH += /usr/include/opencv4
+#DEPENDPATH += /usr/include/opencv4
+
+# -----------------------------------------------------------
+
+#Caffe - Debian
+unix:!macx: LIBS += -L/usr/local/lib/ -lcaffe
+INCLUDEPATH += /usr/local/include
+DEPENDPATH += /usr/local/include
+
+#Caffe - Manjaro
+#unix:!macx: LIBS += -L/usr/lib/ -lcaffe
+#INCLUDEPATH += /usr/include
+#DEPENDPATH += /usr/include
+
+#-----------------------------------------------------------
+
+#glog, protobuf, boost - Debian
+unix:!macx: LIBS += -L/usr/lib/x86_64-linux-gnu/ -lglog
+unix:!macx: LIBS += -L/usr/lib/x86_64-linux-gnu/ -lprotobuf
+unix:!macx: LIBS += -L/usr/lib/x86_64-linux-gnu/ -lboost_system
 INCLUDEPATH += /usr/include
 DEPENDPATH += /usr/include
 
-#glog, protobuf
-unix:!macx: LIBS += -L/usr/lib/ -lglog
-unix:!macx: LIBS += -L/usr/lib/ -lprotobuf
-unix:!macx: LIBS += -L/usr/lib/ -lboost_system
-INCLUDEPATH += /usr/include
-DEPENDPATH += /usr/include
+#glog, protobuf, boost - Manjaro
+#unix:!macx: LIBS += -L/usr/lib/ -lglog
+#unix:!macx: LIBS += -L/usr/lib/ -lprotobuf
+#unix:!macx: LIBS += -L/usr/lib/ -lboost_system
+#INCLUDEPATH += /usr/include
+#DEPENDPATH += /usr/include
+
+#-----------------------------------------------------------
+
