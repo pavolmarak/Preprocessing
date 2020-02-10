@@ -1,12 +1,11 @@
 QT       += gui
-Debug:TARGET = Preprocessingd
-Release:TARGET = Preprocessing
 TEMPLATE = lib
 
 DEFINES += PREPROCESSING_LIBRARY
 DEFINES += QT_DEPRECATED_WARNINGS
 DEFINES += PRO_PWD=\\\"$$_PRO_FILE_PWD_\\\"
 
+CONFIG += c++17
 QMAKE_CFLAGS_ISYSTEM=
 
 SOURCES += preprocessing.cpp \
@@ -39,15 +38,12 @@ HEADERS += preprocessing.h\
     preprocessing_config.h \
     preprocessing_caffenetwork.h
 
-unix {
-    target.path = /usr/lib
-    INSTALLS += target
-}
+# ********************************************************************
+#                           DEPENDENCIES
+# ********************************************************************
 
 CONFIG += manjaro
 #CONFIG += debian
-
-#-----------------------------------------------------------
 
 debian {
     #CUDA - Debian
