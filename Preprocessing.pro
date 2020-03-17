@@ -82,10 +82,10 @@ manjaro {
     INCLUDEPATH += /opt/cuda/include
     DEPENDPATH += /opt/cuda/include
 
-    #ArrayFire - Manjaro (built from source)
-    unix:!macx: LIBS += -L/usr/local/lib/ -lafcuda
-    INCLUDEPATH += /usr/local/include
-    DEPENDPATH += /usr/local/include
+    #ArrayFire - Manjaro (as a package)
+    unix:!macx: LIBS += -L/usr/lib/ -lafcuda
+    INCLUDEPATH += /usr/include
+    DEPENDPATH += /usr/include
 
     #OpenCV - Manjaro (as a package)
     unix:!macx: LIBS += -L/usr/lib/ -lopencv_core
@@ -95,10 +95,10 @@ manjaro {
     INCLUDEPATH += /usr/include/opencv4
     DEPENDPATH += /usr/include/opencv4
 
-    #Caffe - Manjaro (as a package)
-    unix:!macx: LIBS += -L/usr/lib/ -lcaffe
-    INCLUDEPATH += /usr/include
-    DEPENDPATH += /usr/include
+    #Caffe - Manjaro (built from source)
+    unix:!macx: LIBS += -L/usr/local/lib/ -lcaffe
+    INCLUDEPATH += /usr/local/include
+    DEPENDPATH += /usr/local/include
 
     #glog, protobuf, boost - Manjaro (as a package)
     unix:!macx: LIBS += -L/usr/lib/ -lglog
