@@ -6,14 +6,13 @@
 Fingerprint preprocessing module for DBOX
 
 **Dependencies:**  
-- [OpenCV 3.4.1](https://github.com/opencv/opencv)  
-- [Caffe 1.0](https://github.com/BVLC/caffe)  
-- [ArrayFire 3.5.1](https://arrayfire.com/download/)  
-- [CUDA 9.1 (minimum 8.0)](https://developer.nvidia.com/cuda-downloads) 
-- [cuDNN 7.1](https://developer.nvidia.com/rdp/cudnn-download)
-- [Qt5 / Qt Creator 4](https://www.qt.io/download)  
+- OpenCV 4
+- Caffe 1
+- ArrayFire
+- CUDA 8-10.2
+- cuDNN up to 7.6.5
+- Qt 5 + Qt Creator 
 
-*The mentioned or newer versions are recommended*  
   
 **Getting Started:**  
 1. You need to provide valid paths to these libraries and their header files in ```.pro``` file.
