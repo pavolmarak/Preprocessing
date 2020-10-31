@@ -1,6 +1,7 @@
 QT       += gui
 TEMPLATE = lib
 
+TARGET = ofpreproc
 DEFINES += PREPROCESSING_LIBRARY
 DEFINES += QT_DEPRECATED_WARNINGS
 DEFINES += PRO_PWD=\\\"$$_PRO_FILE_PWD_\\\"
@@ -45,6 +46,38 @@ HEADERS += preprocessing.h\
 CONFIG += manjaro
 #CONFIG += debian
 
+manjaro {
+    # CUDA - Manjaro (as a package)
+    unix:!macx: LIBS += -L/opt/cuda/lib64/ -lcudart
+    INCLUDEPATH += /opt/cuda/include
+    DEPENDPATH += /opt/cuda/include
+
+    #ArrayFire - Manjaro (as a package)
+    unix:!macx: LIBS += -L/usr/lib/ -lafcuda
+    INCLUDEPATH += /usr/include
+    DEPENDPATH += /usr/include
+
+    #OpenCV - Manjaro (as a package)
+    unix:!macx: LIBS += -L/usr/lib/ -lopencv_core
+    unix:!macx: LIBS += -L/usr/lib/ -lopencv_imgproc
+    unix:!macx: LIBS += -L/usr/lib/ -lopencv_imgcodecs
+    unix:!macx: LIBS += -L/usr/lib/ -lopencv_highgui
+    INCLUDEPATH += /usr/include/opencv4
+    DEPENDPATH += /usr/include/opencv4
+
+    #Caffe - Manjaro (built from source)
+    unix:!macx: LIBS += -L/usr/local/lib/ -lcaffe
+    INCLUDEPATH += /usr/local/include
+    DEPENDPATH += /usr/local/include
+
+    #glog, protobuf, boost - Manjaro (as a package)
+    unix:!macx: LIBS += -L/usr/lib/ -lglog
+    unix:!macx: LIBS += -L/usr/lib/ -lprotobuf
+    unix:!macx: LIBS += -L/usr/lib/ -lboost_system
+    INCLUDEPATH += /usr/include
+    DEPENDPATH += /usr/include
+}
+
 debian {
     #CUDA - Debian
     unix:!macx: LIBS += -L/usr/local/cuda/lib64/ -lcudart
@@ -76,34 +109,4 @@ debian {
     INCLUDEPATH += /usr/include
     DEPENDPATH += /usr/include
 }
-manjaro {
-    #CUDA - Manjaro
-    unix:!macx: LIBS += -L/opt/cuda/lib64/ -lcudart
-    INCLUDEPATH += /opt/cuda/include
-    DEPENDPATH += /opt/cuda/include
 
-    #ArrayFire - Manjaro (as a package)
-    unix:!macx: LIBS += -L/usr/lib/ -lafcuda
-    INCLUDEPATH += /usr/include
-    DEPENDPATH += /usr/include
-
-    #OpenCV - Manjaro (as a package)
-    unix:!macx: LIBS += -L/usr/lib/ -lopencv_core
-    unix:!macx: LIBS += -L/usr/lib/ -lopencv_imgproc
-    unix:!macx: LIBS += -L/usr/lib/ -lopencv_imgcodecs
-    unix:!macx: LIBS += -L/usr/lib/ -lopencv_highgui
-    INCLUDEPATH += /usr/include/opencv4
-    DEPENDPATH += /usr/include/opencv4
-
-    #Caffe - Manjaro (built from source)
-    unix:!macx: LIBS += -L/usr/local/lib/ -lcaffe
-    INCLUDEPATH += /usr/local/include
-    DEPENDPATH += /usr/local/include
-
-    #glog, protobuf, boost - Manjaro (as a package)
-    unix:!macx: LIBS += -L/usr/lib/ -lglog
-    unix:!macx: LIBS += -L/usr/lib/ -lprotobuf
-    unix:!macx: LIBS += -L/usr/lib/ -lboost_system
-    INCLUDEPATH += /usr/include
-    DEPENDPATH += /usr/include
-}
