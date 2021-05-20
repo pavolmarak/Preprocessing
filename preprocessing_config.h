@@ -63,7 +63,7 @@ typedef struct input_params {
 // nastavenia pre funkciu GaussianBlur, ktora sa pouziva na vyhladenie smerovej mapy
 typedef struct gaussian_blur_settings {
     int blockSize;  // velkost bloku pre vyhladenie smerovej mapy (cez bloky)
-    float sigma;   // sigma pre vyhladenie smerovej mapy
+    double sigma;   // sigma pre vyhladenie smerovej mapy
 } GAUSSIAN_BLUR_SETTINGS;
 
 typedef struct omap_params {
