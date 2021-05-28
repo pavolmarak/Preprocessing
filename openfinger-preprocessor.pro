@@ -48,9 +48,9 @@ CONFIG += manjaro
 
 manjaro {
     # CUDA - Manjaro (as a package)
-    unix:!macx: LIBS += -L/opt/cuda/lib64/ -lcudart
-    INCLUDEPATH += /opt/cuda/include
-    DEPENDPATH += /opt/cuda/include
+    unix:!macx: LIBS += -L/usr/local/cuda-10.2/lib64/ -lcudart
+    INCLUDEPATH += /usr/local/cuda-10.2/include
+    DEPENDPATH += /usr/local/cuda-10.2/include
 
     #ArrayFire - Manjaro (as a package)
     unix:!macx: LIBS += -L/usr/lib/ -lafcuda

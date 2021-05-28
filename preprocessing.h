@@ -14,6 +14,7 @@
 #include "frequencymap.h"
 #include "mask.h"
 #include "qualitymap.h"
+#include "helper.h"
 
 typedef struct preprocessing_all_results {
     cv::Mat imgOriginal;
@@ -42,6 +43,7 @@ typedef struct preprocessing_results {
 #define PREPROCESSING_RESULTS_DEFINED
 #endif
 
+
 //duration in ms
 typedef struct preprocessing_durations {
     int contrastEnhancement;
@@ -63,6 +65,7 @@ public:
     Preprocessing();
     void start();
 
+    int loadInput(QImage &imgOriginal);
     int loadInput(cv::Mat imgOriginal);
     int loadInput(QVector<cv::Mat> imgOriginals);
     int loadInput(QString inputPath);

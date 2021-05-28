@@ -234,6 +234,23 @@ void Preprocessing::cleanDurations()
 
 // INPUT
 
+int Preprocessing::loadInput(QImage &imgOriginal)
+{
+    if (this->preprocessingIsRunning) {
+        this->preprocessingError(10);
+        return -1;
+    }
+
+    this->cleanInput();
+    imgOriginal.convertTo(QImage::Format_Grayscale8);
+    this->inputParams.imgOriginal = Helper::QImage2Mat(imgOriginal,CV_8UC1);
+    this->inputParams.inputLoaded = true;
+    this->inputParams.mode = image;
+
+    return 1;
+}
+
+
 int Preprocessing::loadInput(cv::Mat imgOriginal)
 {
     if (this->preprocessingIsRunning) {
@@ -334,6 +351,8 @@ void Preprocessing::start()
     }
     else this->preprocessingError(10);
 }
+
+
 
 void Preprocessing::startProcess(const cv::Mat &imgOriginal)
 {
