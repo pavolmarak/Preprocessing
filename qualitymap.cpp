@@ -57,7 +57,7 @@ cv::Mat QualityMap::getImgQualityMap()
         }
     }
 
-    return imgQualityMap.rowRange(0, this->ih).colRange(0, this->iw);
+    return imgQualityMap.rowRange(0, this->ih).colRange(0, this->iw).clone();
 }
 
 cv::Mat QualityMap::getQualityMap()
