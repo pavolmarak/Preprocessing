@@ -30,17 +30,17 @@ void Binarization::binarizeAdaptive()
 
 void Binarization::deleteBackground()
 {
-    if (*this->binarization.useQualityMap) {
-        for (int x = 0; x < this->imgBinarized.cols; x++) {
-            for (int y = 0; y < this->imgBinarized.rows; y++) {
-                if (this->binarization.imgQualityMap->at<uchar>(y, x) == 0) this->imgBinarized.at<uchar>(y, x) = 255;
-            }
-        }
-    }
-    else if (*this->binarization.useMask) {
+    if (*this->binarization.useMask) {
         for (int x = 0; x < this->imgBinarized.cols; x++) {
             for (int y = 0; y < this->imgBinarized.rows; y++) {
                 if (this->binarization.imgMask->at<uchar>(y, x) == 0) this->imgBinarized.at<uchar>(y, x) = 255;
+            }
+        }
+    }
+    else{
+        for (int x = 0; x < this->imgBinarized.cols; x++) {
+            for (int y = 0; y < this->imgBinarized.rows; y++) {
+                if (this->binarization.imgQualityMap->at<uchar>(y, x) == 0) this->imgBinarized.at<uchar>(y, x) = 255;
             }
         }
     }
