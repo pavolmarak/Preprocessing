@@ -380,6 +380,7 @@ void Preprocessing::startProcess(const cv::Mat &imgOriginal)
 
         this->results.imgQualityMap = this->qMap.getImgQualityMap();
         this->results.qualityMap = this->qMap.getQualityMap();
+        this->oMap.setQMap(this->results.qualityMap);
     }
 
     // FREQUENCY MAP WITH NEURAL NETWORK

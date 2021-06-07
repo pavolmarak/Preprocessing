@@ -82,7 +82,7 @@ cv::Mat QualityMap::getQualityMap()
 
     //cv::GaussianBlur(qualityMap, qualityMap, cv::Size(121, 121), 10.0, 10.0);
 
-    return qualityMap.rowRange(0, this->ih).colRange(0, this->iw);
+    return qualityMap.rowRange(0, this->ih).colRange(0, this->iw).clone();
 }
 
 void QualityMap::fill_minutiae(MINUTIAE_VECTOR &minutiae)

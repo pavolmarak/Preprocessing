@@ -203,11 +203,15 @@ void OrientationMap::drawBasicMap(const cv::Mat &imgOriginal)
     int colsMat = this->oMap_basic.cols;
     float row1, col1, row2, col2, row3, col3, direction;
 
+
     for (int y = 0; y<rowsMat; y++){
         for(int x =0; x<colsMat; x++){
             direction = this->oMap_basic.at<float>(y,x) + CV_PI / 2;
             row1 = y * this->omap.blockSize + this->omap.blockSize / 2 + paddingY / 2;
             col1 = x * this->omap.blockSize + this->omap.blockSize / 2 + paddingX / 2;
+            if(this->qMap.at<uchar>(row1,col1) == 1){
+                continue;
+            }
             row2 = row1 - sin(direction) * this->omap.blockSize / 2;
             col2 = col1 - cos(direction) * this->omap.blockSize / 2;
             row3 = row1 + sin(direction) * this->omap.blockSize / 2;
@@ -237,6 +241,16 @@ cv::Mat OrientationMap::getOMap_advanced() const
 af::array OrientationMap::getOMapAF_advanced() const
 {
     return oMapAF_advanced;
+}
+
+const cv::Mat &OrientationMap::getQMap() const
+{
+    return qMap;
+}
+
+void OrientationMap::setQMap(const cv::Mat &newQMap)
+{
+    qMap = newQMap;
 }
 
 af::array OrientationMap::getOMapAF_basic() const

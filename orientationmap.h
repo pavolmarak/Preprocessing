@@ -26,6 +26,9 @@ public:
     af::array getOMapAF_advanced() const;
 
 
+    const cv::Mat &getQMap() const;
+    void setQMap(const cv::Mat &newQMap);
+
 private:
     QTime timer;
 
@@ -42,6 +45,8 @@ private:
     cv::Mat imgOMap_basic; // obrazok BASIC smerovej mapy (ADVANCED mapa sa neda zobrazit, lebo kazdy pixel ma iny smer)
 
     float duration;
+
+    cv::Mat qMap; // quality map
 
 };
 
